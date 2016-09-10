@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 {
 	if(argc!=4)
 	{
-		std::cout<<"usage: ./gicp file_name1 file_name2 {all, variance, reflectivity, grayscale, normal}\n";
+		std::cout<<"usage: ./mireg file_name1 file_name2 {all, variance, reflectivity, grayscale, normal}\n";
 	}
 	else
 	{
