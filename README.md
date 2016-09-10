@@ -1,5 +1,5 @@
 # Mireg
-This project is mainly focused on registering 3D Laser Scans using Mutual Information and GPU parallelization of computations
+This project is mainly focused on registering 3D Laser Scans using Mutual Information and GPU parallelization of computations.
 
 1. Current program uses 3D Laser Scan point cloud data and corresponding Camera data for registration of 2 Laser scans.
 2. The key assumption of the current method is that a dominant ground plane is present in the laser scans, which is the case for laser scanners mounted on top of cars and other vehicles.
