@@ -7,6 +7,7 @@ This project is mainly focused on registering 3D Laser Scans using Mutual Inform
 
 
 To build the project you will need to have following libraries and tools installed on your system:
+
 1. CMake
 2. Nvidia Cuda
 3. Boost 1.61.0 or higher
