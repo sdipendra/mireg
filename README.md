@@ -18,13 +18,20 @@ To build the project you will need to have following libraries and tools install
 
 To build the project:
 
-cd TO_PROJECT_DIRECTORY
-mkdir build
-cd build
-cmake ..
-make -j8 or make
-cd bin
-./mireg file_name1 file_name2 {all, variance, reflectivity, grayscale, normal}
-this will output the euler transformation to be carried out on the first(reading) scan to align with the second(reference) scan.
+    cd TO_PROJECT_DIRECTORY
+    mkdir build
+    cd build
+    cmake ..
+    make
+    cd bin
+    ./mireg file_name1 file_name2 {all, variance, reflectivity, grayscale, normal}
+
+this will output the euler transformation to be carried out on the first(reading) scan to align with the second(reference) scan. Transformation matrix can also be obtained by tweaking the code slightly as I am converting transformation matrix only to euler transformations.
 
 This is very crude information. I will improve it on request and on my own as I get time. The code also needs to be organised well.
+
+Current code is only a serial implementation. My first target will be to organise the code properly so others can understand it. After that I will work on improving the serial implementation by using more effecient routines.
+
+Once, all that is done I will design the parallel version of the program and work on it's implementation.
+
+## Most importantly please feel free to contribute, offer suggestions and crticize the current work.
