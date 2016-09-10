@@ -1,0 +1,7 @@
+configure_file(mireg.h ${PROJECT_BINARY_DIR}/include/mireg.h COPYONLY)
+configure_file(pcl_visualizer.h ${PROJECT_BINARY_DIR}/include/pcl_visualizer.h COPYONLY)
+configure_file(pcl_helper.h ${PROJECT_BINARY_DIR}/include/pcl_helper.h COPYONLY)
+configure_file(characteristic_map.h ${PROJECT_BINARY_DIR}/include/characteristic_map.h COPYONLY)
+configure_file(mutual_information.h ${PROJECT_BINARY_DIR}/include/mutual_information.h COPYONLY)
+configure_file(registration.h ${PROJECT_BINARY_DIR}/include/registration.h COPYONLY)
+configure_file(transformation.h ${PROJECT_BINARY_DIR}/include/transformation.h COPYONLY)
