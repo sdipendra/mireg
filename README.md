@@ -1,4 +1,4 @@
-# mireg
+# Mireg
 This project is mainly focused on registering 3D Laser Scans using Mutual Information and GPU parallelization of computations
 
 1. Current program uses 3D Laser Scan point cloud data and corresponding Camera data for registration of 2 Laser scans.
