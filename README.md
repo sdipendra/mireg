@@ -29,6 +29,8 @@ To build the project:
 
 this will output the euler transformation to be carried out on the first(reading) scan to align with the second(reference) scan. Transformation matrix can also be obtained by tweaking the code slightly as I am converting transformation matrix only to euler transformations.
 
+The scans dataset contains the first line as the corresponding image index(not relevant for now). After that it contains lines containing points data in the following format coordinates {x, y, z}, noraml vectors {nx, ny, nz}, reflectivity {r}, grayscale {g}. i.e the format is x y z nx ny nz r g.
+
 This is very crude information. I will improve it on request and on my own as I get time. The code also needs to be organised well.
 
 Current code is only a serial implementation. My first target will be to organise the code properly so others can understand it. After that I will work on improving the serial implementation by using more effecient routines.
