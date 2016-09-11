@@ -3,7 +3,7 @@ This project is mainly focused on registering 3D Laser Scans using Mutual Inform
 
 1. Current program uses 3D Laser Scan point cloud data and corresponding Camera data for registration of 2 Laser scans.
 2. The key assumption of the current method is that a dominant ground plane is present in the laser scans, which is the case for laser scanners mounted on top of cars and other vehicles.
-3. Sample scans are provided with the code to test the algorithm and code which have been extracted and obtained from fords dataset(not required at this stage).(http://robots.engin.umich.edu/uploads/SoftwareData/Ford/dataset-1.tar.gz)
+3. To test the algorithm and code sample scans are provided, which have been extracted and obtained from fords dataset(not required at this stage).(http://robots.engin.umich.edu/uploads/SoftwareData/Ford/dataset-1.tar.gz)
 
 
 To build the project you will need to have following libraries and tools installed on your system:
