@@ -69,9 +69,9 @@ void process(std::vector<point>& scan, std::vector<std::vector<long double>>& tr
 	for(int i=0; i<int(scan.size()); ++i)
 	{
 		point temp=scan[i];
-		temp.x=transform[0][0]*scan[i].x+transform[0][1]*scan[i].y+transform[0][2]*scan[i].z+transform[0][3];
-		temp.y=transform[1][0]*scan[i].x+transform[1][1]*scan[i].y+transform[1][2]*scan[i].z+transform[1][3];
-		temp.z=transform[2][0]*scan[i].x+transform[2][1]*scan[i].y+transform[2][2]*scan[i].z+transform[2][3];
+		temp.coordinate(0)=transform[0][0]*scan[i].coordinate(0)+transform[0][1]*scan[i].coordinate(1)+transform[0][2]*scan[i].coordinate(2)+transform[0][3];
+		temp.coordinate(1)=transform[1][0]*scan[i].coordinate(0)+transform[1][1]*scan[i].coordinate(1)+transform[1][2]*scan[i].coordinate(2)+transform[1][3];
+		temp.coordinate(2)=transform[2][0]*scan[i].coordinate(0)+transform[2][1]*scan[i].coordinate(1)+transform[2][2]*scan[i].coordinate(2)+transform[2][3];
 		scan[i]=temp;
 	}
 }
@@ -90,7 +90,7 @@ int main(int argc, char** argv)
 		for(auto it=cloud.begin(); it!=cloud.end(); ++it)
 		{
 			vf temp(3);
-			temp[0]=it->x; temp[1]=it->y; temp[2]=it->z;
+			temp[0]=it->coordinate(0); temp[1]=it->coordinate(1); temp[2]=it->coordinate(2);
 			points.push_back(temp);
 		}
 		plot(points);

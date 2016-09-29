@@ -33,21 +33,22 @@ std::vector<std::vector<long double>> mat_add(std::vector<std::vector<long doubl
 	return ans;
 }
 
-std::vector<std::vector<long double>> mat_inv(std::vector<std::vector<long double>>& mat)	// Assuming only 4x4 transformation matrix
+Eigen::Matrix4d mat_inv(Eigen::Matrix4d& mat)	// Assuming only 4x4 transformation matrix
 {
-	std::vector<std::vector<long double>> ans(mat.size(), std::vector<long double>(mat[0].size(), 0.0));
+//	std::vector<std::vector<long double>> ans(mat.size(), std::vector<long double>(mat[0].size(), 0.0));
+	Eigen::Matrix4d ans;
 	for(int i=0; i<3; ++i)
 	{
 		for(int j=0; j<3; ++j)
 		{
-			ans[i][j]=mat[j][i];
+			ans(i, j)=mat(j, i);
 		}
 	}
 	for(int i=0; i<3; ++i)
 	{
-		ans[i][3]=-(ans[i][0]*mat[0][3]+ans[i][1]*mat[1][3]+ans[i][2]*mat[2][3]);
+		ans(i, 3)=-(ans(i, 0)*mat(0, 3)+ans(i, 1)*mat(1, 3)+ans(i, 2)*mat(2, 3));
 	}
-	ans[3][3]=1.0;
+	ans(3, 3)=1.0;
 	return ans;
 }
 
@@ -56,35 +57,35 @@ bool equal(const long double& n1, const long double& n2, long double epsilon=std
 	return(epsilon>std::abs(n1-n2));
 }
 
-std::vector<long double> euler_rep(std::vector<std::vector<long double>>& transformation_mat)
+std::vector<long double> euler_rep(Eigen::Matrix4d& transformation_mat)
 {
 	std::vector<long double> ans(6);
 	
-	for(int i=0; i<3; ++i) ans[i]=transformation_mat[i][3];	// translations
+	for(int i=0; i<3; ++i) ans[i]=transformation_mat(i, 3);	// translations
 	
 	// check for gimbal locking
-	if(equal(transformation_mat[2][0], (long double)-1.0))
+	if(equal(transformation_mat(2, 0), (long double)-1.0))
 	{
 		ans[3] = pi/2.0;
 		ans[4] = 0.0;
-		ans[5] = ans[3]+atan2(transformation_mat[0][1], transformation_mat[0][2]);
+		ans[5] = ans[3]+atan2(transformation_mat(0, 1), transformation_mat(0, 2));
 	}
-	else if(equal(transformation_mat[2][0], (long double)1.0))
+	else if(equal(transformation_mat(2, 0), (long double)1.0))
 	{
 		ans[3] = -pi/2.0;
 		ans[4] = 0.0;
-		ans[5] = -ans[3] + atan2(-transformation_mat[0][1], -transformation_mat[0][2]);
+		ans[5] = -ans[3] + atan2(-transformation_mat(0, 1), -transformation_mat(0, 2));
 	}
 	else
 	{
-		long double y1 = -asin(transformation_mat[2][0]);
+		long double y1 = -asin(transformation_mat(2, 0));
 		long double y2 = pi - y1;
 		
-		long double x1 = atan2(transformation_mat[2][1] / cos(y1), transformation_mat[2][2] / cos(y1));
-		long double x2 = atan2(transformation_mat[2][1] / cos(y2), transformation_mat[2][2] / cos(y2));
+		long double x1 = atan2(transformation_mat(2, 1) / cos(y1), transformation_mat(2, 2) / cos(y1));
+		long double x2 = atan2(transformation_mat(2, 1) / cos(y2), transformation_mat(2, 2) / cos(y2));
 		
-		long double z1 = atan2(transformation_mat[1][0] / cos(y1), transformation_mat[0][0] / cos(y1));
-		long double z2 = atan2(transformation_mat[1][0] / cos(y2), transformation_mat[0][0] / cos(y2));
+		long double z1 = atan2(transformation_mat(1, 0) / cos(y1), transformation_mat(0, 0) / cos(y1));
+		long double z2 = atan2(transformation_mat(1, 0) / cos(y2), transformation_mat(0, 0) / cos(y2));
 		
 		if((std::abs(x1) + std::abs(y1) + std::abs(z1)) <= (std::abs(x2) + std::abs(y2) + std::abs(z2)))
 		{
@@ -111,6 +112,7 @@ void ground_plane_extraction(std::vector<point>& complete, std::vector<point>& g
 	float maxx=-std::numeric_limits<float>::max(), maxy=-std::numeric_limits<float>::max(), maxz=-std::numeric_limits<float>::max(), minx=std::numeric_limits<float>::max(), miny=std::numeric_limits<float>::max(), minz=std::numeric_limits<float>::max();
 	for(auto it=complete.begin(); it!=complete.end(); ++it)
 	{
+/*
 		if(it->x>maxx) maxx=it->x;
 		if(it->y>maxy) maxy=it->y;
 		if(it->z>maxz) maxz=it->z;
@@ -118,6 +120,14 @@ void ground_plane_extraction(std::vector<point>& complete, std::vector<point>& g
 		if(it->x<minx) minx=it->x;
 		if(it->y<miny) miny=it->y;
 		if(it->z<minz) minz=it->z;
+*/
+		if(it->coordinate(0)>maxx) maxx=it->coordinate(0);
+		if(it->coordinate(1)>maxy) maxy=it->coordinate(1);
+		if(it->coordinate(2)>maxz) maxz=it->coordinate(2);
+		
+		if(it->coordinate(0)<minx) minx=it->coordinate(0);
+		if(it->coordinate(1)<miny) miny=it->coordinate(1);
+		if(it->coordinate(2)<minz) minz=it->coordinate(2);
 	}
 	
 	float length=maxx-minx, breadth=maxy-miny, height=maxz-minz;
@@ -125,34 +135,55 @@ void ground_plane_extraction(std::vector<point>& complete, std::vector<point>& g
 	vvf grid(grid_length, vf(grid_breadth, std::numeric_limits<float>::max()));
 	for(auto it=complete.begin(); it!=complete.end(); ++it)
 	{
-		int x=(it->x-minx+xbox/2.0)/xbox, y=(it->y-miny+ybox/2.0)/ybox;
-		if(grid[x][y]>it->z) grid[x][y]=it->z;
+//		int x=(it->x-minx+xbox/2.0)/xbox, y=(it->y-miny+ybox/2.0)/ybox;
+//		if(grid[x][y]>it->z) grid[x][y]=it->z;
+		int x=(it->coordinate(0)-minx+xbox/2.0)/xbox, y=(it->coordinate(1)-miny+ybox/2.0)/ybox;
+		if(grid[x][y]>it->coordinate(2)) grid[x][y]=it->coordinate(2);
 	}
 	
 	ground.clear(); rest.clear();
 	for(auto it=complete.begin(); it!=complete.end(); ++it)
 	{
-		int x=(it->x-minx+xbox/2.0)/xbox, y=(it->y-miny+ybox/2.0)/ybox;
-		if(it->z-grid[x][y]<clearance) ground.push_back(*it);
+//		int x=(it->x-minx+xbox/2.0)/xbox, y=(it->y-miny+ybox/2.0)/ybox;
+//		if(it->z-grid[x][y]<clearance) ground.push_back(*it);
+//		else rest.push_back(*it);
+		int x=(it->coordinate(0)-minx+xbox/2.0)/xbox, y=(it->coordinate(1)-miny+ybox/2.0)/ybox;
+		if(it->coordinate(2)-grid[x][y]<clearance) ground.push_back(*it);
 		else rest.push_back(*it);
 	}
 }
 
-void transform(std::vector<point>& cloud, std::vector<std::vector<long double>>& transformation_mat)
+void transform(std::vector<point>& cloud, Eigen::Matrix4d& transformation_mat)
 {
 	int n=int(cloud.size());
 	for(int i=0; i<n; ++i)
 	{
+/*
 		point temp=cloud[i];
 		temp.x=transformation_mat[0][0]*cloud[i].x+transformation_mat[0][1]*cloud[i].y+transformation_mat[0][2]*cloud[i].z+transformation_mat[0][3]*1.0;
 		temp.y=transformation_mat[1][0]*cloud[i].x+transformation_mat[1][1]*cloud[i].y+transformation_mat[1][2]*cloud[i].z+transformation_mat[1][3]*1.0;
 		temp.z=transformation_mat[2][0]*cloud[i].x+transformation_mat[2][1]*cloud[i].y+transformation_mat[2][2]*cloud[i].z+transformation_mat[2][3]*1.0;
 		cloud[i]=temp;
+*/
+		Eigen::Transform<double, 3, Eigen::Affine> t(transformation_mat);
+//		t = transformation_mat;
+		cloud[i].coordinate=t*cloud[i].coordinate;
 	}
 }
 
-void build_transform_normal(std::vector<std::vector<long double>>& transformation_mat, std::vector<long double>& normal1, std::vector<long double>& normal2)
+void build_transform_normal(Eigen::Matrix4d& transformation_mat, Eigen::Vector3d& normal1, Eigen::Vector3d& normal2)
 {
+	normal1.normalize(); normal2.normalize();
+	Eigen::Vector3d k;
+	k = normal1.cross(normal2); k.normalize();
+	double angle=acos(normal1.dot(normal2));
+	Eigen::Matrix3d rotation_mat;
+	rotation_mat=Eigen::AngleAxisd(angle, k);
+	transformation_mat.block<3, 3>(0, 0) = rotation_mat;
+	transformation_mat(3, 3) = 1;
+	
+	// Remove after testing
+/*
 	std::vector<long double> k(3);
 	k[0] = normal1[1]*normal2[2]-normal1[2]*normal2[1];
 	k[1]=-(normal1[0]*normal2[2]-normal1[2]*normal2[0]);
@@ -193,10 +224,24 @@ void build_transform_normal(std::vector<std::vector<long double>>& transformatio
 		}
 	}
 	transformation_mat[3][3]=1.0;
+	*/
 }
 
-void build_transform_centroid(std::vector<std::vector<long double>>& transformation_mat, std::vector<long double>& normal1, std::vector<long double>& centroid1, std::vector<long double>& normal2, std::vector<long double>& centroid2)
+void build_transform_centroid(Eigen::Matrix4d& transformation_mat, Eigen::Vector3d& normal1, Eigen::Vector3d& centroid1, Eigen::Vector3d& normal2, Eigen::Vector3d& centroid2)
 {
+	normal1.normalize(); normal2.normalize();
+	Eigen::Vector3d k;
+	k = normal1.cross(normal2); k.normalize();
+	double angle=acos(normal1.dot(normal2));
+	Eigen::Matrix3d rotation_mat;
+	rotation_mat=Eigen::AngleAxisd(angle, k);
+	transformation_mat.block<3, 3>(0, 0) = rotation_mat;
+	centroid1=rotation_mat*centroid1;
+	transformation_mat(2, 3) = centroid2(2)-centroid1(2);
+	transformation_mat(3, 3) = 1;
+
+
+/*
 	std::vector<long double> k(3);
 	k[0] = normal1[1]*normal2[2]-normal1[2]*normal2[1];
 	k[1]=-(normal1[0]*normal2[2]-normal1[2]*normal2[0]);
@@ -238,14 +283,15 @@ void build_transform_centroid(std::vector<std::vector<long double>>& transformat
 	}
 	transformation_mat[2][3]=centroid2[2]-(rotation_mat[2][0]*centroid1[0]+rotation_mat[2][1]*centroid1[1]+rotation_mat[2][2]*centroid1[2]);
 	transformation_mat[3][3]=1.0;
+*/
 }
 
-void build_transform(std::vector<std::vector<long double>>& transformation_mat, long double theta, long double x, long double y)
+void build_transform(Eigen::Matrix4d& transformation_mat, long double theta, long double x, long double y)
 {
-	transformation_mat.clear();
-	transformation_mat=std::vector<std::vector<long double>>(4, std::vector<long double>(4, 0.0));
-	transformation_mat[0][0]=cos(theta); transformation_mat[0][1]=-sin(theta); transformation_mat[0][3]=x;
-	transformation_mat[1][0]=sin(theta); transformation_mat[1][1]=cos(theta); transformation_mat[1][3]=y;
-	transformation_mat[2][2]=1.0;
-	transformation_mat[3][3]=1.0;
+	Eigen::Affine3d rotation_mat;
+	rotation_mat = Eigen::AngleAxisd(theta, Eigen::Vector3d(0, 0, 1));
+
+	Eigen::Affine3d translation_mat(Eigen::Translation3d(Eigen::Vector3d(x, y, 0)));
+
+	transformation_mat = (translation_mat * rotation_mat).matrix();
 }

@@ -29,7 +29,9 @@ bool file_read(std::string filename, std::vector<point>& cloud)
 	}
 }
 
-bool file_write(std::string filename, std::vector<long double>& euler_rep)
+
+
+bool file_write(std::string filename, std::vector<long double>& euler_rep)	//TODO: modify
 {
 	std::ofstream file(filename);
 	if(file.is_open())
@@ -47,7 +49,11 @@ bool file_write(std::string filename, std::vector<long double>& euler_rep)
 	}
 }
 
-void print_transform(std::vector<std::vector<long double>>& transformation_mat)
+
+
+
+
+void print_transform(std::vector<std::vector<long double>>& transformation_mat)	//TODO: modify
 {
 	for(int i=0; i<4; ++i)
 	{
@@ -58,6 +64,8 @@ void print_transform(std::vector<std::vector<long double>>& transformation_mat)
 		std::cout<<std::endl;
 	}
 }
+
+
 
 int main(int argc, char** argv)
 {
@@ -77,54 +85,92 @@ int main(int argc, char** argv)
 			std::cout<<"File read failed!!!"; exit(1);	// write these error messages to the output file
 		}
 		
-//		plot_merged(reading, reference);
-		
-		std::vector<std::vector<long double>> transformation_mat1, transformation_mat2, transformation_mat3;
-		std::vector<point> ground1, ground2, rest1, rest2;
-		std::vector<long double> normal1, normal2, centroid1, centroid2;
-		std::vector<long double> z_axis(3, 0.0); z_axis[2]=1.0;
-		std::vector<long double> origin(3, 0.0);
+		plot_merged(reading, reference);
 
+
+//		std::vector<std::vector<long double>> transformation_mat1, transformation_mat2, transformation_mat3;
+		Eigen::Matrix4d transformation_mat1, transformation_mat2, transformation_mat3;
+
+
+
+		std::vector<point> ground1, ground2, rest1, rest2;
+
+
+//		std::vector<long double> normal1, normal2, centroid1, centroid2;	//TODO: modify
+		Eigen::Vector3d normal1, normal2, centroid1, centroid2;
+//		std::vector<long double> z_axis(3, 0.0); z_axis[2]=1.0;
+		Eigen::Vector3d z_axis(0, 0, 1);
+//		std::vector<long double> origin(3, 0.0);
+		Eigen::Vector3d origin(0, 0, 0);
 		
 		// Find the transform to align reference plane to plane z=0 and apply
 		ground_plane_extraction(reference, ground2, rest2);
-		best_fit_plane1(ground2, normal2, centroid2);	// best_fit_plane
-		build_transform_normal(transformation_mat1, normal2, z_axis);
-		transform(reading, transformation_mat1); transform(reference, transformation_mat1);
+
+
+		best_fit_plane1(ground2, normal2, centroid2);	// best_fit_plane //TODO: modify
+
+
+		build_transform_normal(transformation_mat1, normal2, z_axis);	// TODO: modify
+
+
+		transform(reading, transformation_mat1); transform(reference, transformation_mat1);	//TODO: modify
+
+
 		
 		ground_plane_extraction(reference, ground2, rest2);
-		best_fit_plane1(ground2, normal2, centroid2);
-		std::vector<std::vector<long double>> new_transformation_mat1;
+
+
+		best_fit_plane1(ground2, normal2, centroid2);	//TODO: modify
+//		std::vector<std::vector<long double>> new_transformation_mat1;
+		Eigen::Matrix4d new_transformation_mat1;
 		build_transform_centroid(new_transformation_mat1, normal2, centroid2, z_axis, origin);
 		transform(reading, new_transformation_mat1); transform(reference, new_transformation_mat1);
-		transformation_mat1=mat_multi(new_transformation_mat1, transformation_mat1);
+//		transformation_mat1=mat_multi(new_transformation_mat1, transformation_mat1);
+		transformation_mat1=new_transformation_mat1*transformation_mat1;
+
 		
 		// Find the transform to align reading plane to plane z=0 and apply
 		ground_plane_extraction(reading, ground1, rest1);
+
+
 		best_fit_plane1(ground1, normal1, centroid1);	// best_fit_plane
-		build_transform_normal(transformation_mat2, normal1, z_axis);
+		build_transform_normal(transformation_mat2, normal1, z_axis);	//TODO: modify
 		transform(reading, transformation_mat2);
+
+
 		
 		ground_plane_extraction(reading, ground1, rest1);
-		best_fit_plane1(ground1, normal1, centroid1);
-		std::vector<std::vector<long double>> new_transformation_mat2;
+
+
+		best_fit_plane1(ground1, normal1, centroid1);	//TODO: modify
+//		std::vector<std::vector<long double>> new_transformation_mat2;
+		Eigen::Matrix4d new_transformation_mat2;
 		build_transform_centroid(new_transformation_mat2, normal1, centroid1, z_axis, origin);
 		transform(reading, new_transformation_mat2);
-		transformation_mat2=mat_multi(new_transformation_mat2, transformation_mat2);
-		
-//		plot_merged(reading, reference);
+//		transformation_mat2=mat_multi(new_transformation_mat2, transformation_mat2);
+		transformation_mat2 = new_transformation_mat2 * transformation_mat2;
+
+
+
+		plot_merged(reading, reference);
 		std::string map(argv[3]);
-		if(!multires_registration(reading, reference, transformation_mat3, min_cell_size, hist_size, map))
+
+
+		if(!multires_registration(reading, reference, transformation_mat3, min_cell_size, hist_size, map))	//TODO: modify
 		{
 			std::cout<<"Incorrect 3rd argument passed"<<std::endl;
 			return 1;
-		}
-		
-		std::vector<std::vector<long double>> transformation_mat, temp;
+		}		
+//		std::vector<std::vector<long double>> transformation_mat, temp;
+		Eigen::Matrix4d transformation_mat, temp;
 		temp=mat_inv(transformation_mat1);
-		temp=mat_multi(temp, transformation_mat3);
-		temp=mat_multi(temp, transformation_mat2);
-		transformation_mat=mat_multi(temp, transformation_mat1);
+//		temp=mat_multi(temp, transformation_mat3);
+		temp=temp * transformation_mat3;
+//		temp=mat_multi(temp, transformation_mat2);
+		temp=temp * transformation_mat2;
+//		transformation_mat=mat_multi(temp, transformation_mat1);
+		transformation_mat=temp * transformation_mat1;
+
 		
 		std::string output_name(map); output_name.push_back('_');
 		std::string f1(argv[1]), f2(argv[2]);
@@ -139,7 +185,11 @@ int main(int argc, char** argv)
 		
 //		file_write(output_name, transformation_mat);
 		
-		std::vector<long double> ans = euler_rep(transformation_mat);
+
+
+		std::vector<long double> ans = euler_rep(transformation_mat);	//TODO: modify
+
+
 		/*
 		for(int i=0; i<6; ++i)
 		{
@@ -147,9 +197,13 @@ int main(int argc, char** argv)
 		}
 		std::cout<<std::endl;
 		*/
-		file_write(output_name, ans);
+
+
+		file_write(output_name, ans);	//TODO: modify
 		std::cout<<map<<" "<<s1<<" "<<s2<<" "<<ans[0]<<" "<<ans[1]<<" "<<ans[2]<<" "<<ans[3]<<" "<<ans[4]<<" "<<ans[5]<<std::endl;
-//		plot_merged(reading, reference);
+
+
+		plot_merged(reading, reference);
 	}
 	return 0;
 }

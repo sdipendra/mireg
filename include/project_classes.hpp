@@ -5,8 +5,8 @@
 
 struct point
 {
-	float x, y, z;
-	float nx, ny, nz;
+	Eigen::Vector3d coordinate;
+	Eigen::Vector3d normal;
 	float ref;
 	float gray;
 	void get_point(std::ifstream& file);

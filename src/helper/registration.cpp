@@ -8,7 +8,7 @@
 
 typedef void (*characteristic_map_func)(std::vector<point>&, float, std::pair<pii, vvf>&);
 
-bool multires_registration(std::vector<point>& reading, std::vector<point>& reference, std::vector<std::vector<long double>>& transformation_mat, float min_cell_size, int hist_size, std::string& map)
+bool multires_registration(std::vector<point>& reading, std::vector<point>& reference, Eigen::Matrix4d& transformation_mat, float min_cell_size, int hist_size, std::string& map)
 {
 //		void (*feature_map_func)(std::vector<point>&, float, std::pair<pii, vvf>&) = &variance_map;	//variance_map, reflectivity_map, grayscale_map, normals_map
 		std::vector<long double> map_weightage_coeff(4);

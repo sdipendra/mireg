@@ -367,9 +367,9 @@ void plot_merged(std::vector<point>& reading, std::vector<point>& reference)
 	{
 		pcl::PointXYZRGB point;
 		uint8_t r(255), g(0), b(0);
-		point.x = it.x;
-		point.y = it.y;
-		point.z = it.z;
+		point.x = it.coordinate(0);
+		point.y = it.coordinate(1);
+		point.z = it.coordinate(2);
 		uint32_t rgb = (static_cast<uint32_t>(r) << 16 | static_cast<uint32_t>(g) << 8 | static_cast<uint32_t>(b));
 		point.rgb = *reinterpret_cast<float*>(&rgb);
 		cloud_ptr->points.push_back(point);
@@ -379,9 +379,9 @@ void plot_merged(std::vector<point>& reading, std::vector<point>& reference)
 	{
 		pcl::PointXYZRGB point;
 		uint8_t r(0), g(255), b(0);
-		point.x = it.x;
-		point.y = it.y;
-		point.z = it.z;
+		point.x = it.coordinate(0);
+		point.y = it.coordinate(1);
+		point.z = it.coordinate(2);
 		uint32_t rgb = (static_cast<uint32_t>(r) << 16 | static_cast<uint32_t>(g) << 8 | static_cast<uint32_t>(b));
 		point.rgb = *reinterpret_cast<float*>(&rgb);
 		cloud_ptr->points.push_back (point);

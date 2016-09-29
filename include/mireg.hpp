@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include <thrust/reduce.h>
-#include <thrust/device_vector.h>
+//#include <thrust/reduce.h>	revive when start with parallel version
+//#include <thrust/device_vector.h>
 
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_eigen.h>
@@ -25,6 +25,9 @@
 #include <gsl/gsl_siman.h>
 #include <gsl/gsl_ieee_utils.h>
 
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
 
 // Short hands for data types being used in the program
 typedef long double ld;

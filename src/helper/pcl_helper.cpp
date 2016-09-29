@@ -29,12 +29,12 @@ void best_fit_plane(std::vector<point>& ground, std::vector<long double>& normal
   {
   	pcl::PointXYZRGB pointv;
   	uint8_t r(0), g(255), b(0);
-    pointv.x = ground[i].x;
-    pointv.y = ground[i].y;
-    pointv.z = ground[i].z;
-    centroid[0]+=ground[i].x/n;
-    centroid[1]+=ground[i].y/n;
-    centroid[2]+=ground[i].z/n;
+    pointv.x = ground[i].coordinate(0);
+    pointv.y = ground[i].coordinate(1);
+    pointv.z = ground[i].coordinate(2);
+    centroid[0]+=ground[i].coordinate(0)/n;
+    centroid[1]+=ground[i].coordinate(1)/n;
+    centroid[2]+=ground[i].coordinate(2)/n;
     uint32_t rgb = (static_cast<uint32_t>(r) << 16 | static_cast<uint32_t>(g) << 8 | static_cast<uint32_t>(b));
 		pointv.rgb = *reinterpret_cast<float*>(&rgb);
 		cloud_ptr->points.push_back(pointv);
@@ -85,20 +85,20 @@ void best_fit_plane(std::vector<point>& ground, std::vector<long double>& normal
   */
 }
 
-void best_fit_plane1(std::vector<point>& ground, std::vector<long double>& normal, std::vector<long double>& centroid)
+void best_fit_plane1(std::vector<point>& ground, Eigen::Vector3d& normal, Eigen::Vector3d& centroid)
 {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
   int n=int(ground.size());
-  centroid.clear(); centroid=std::vector<long double>(3, 0.0);
+  normal << 0, 0, 0; centroid << 0, 0, 0;
   for(int i=0; i<n; ++i)
   {
   	pcl::PointXYZ point;
-    point.x = ground[i].x;
-    point.y = ground[i].y;
-    point.z = ground[i].z;
-    centroid[0]+=ground[i].x/n;
-    centroid[1]+=ground[i].y/n;
-    centroid[2]+=ground[i].z/n;
+    point.x = ground[i].coordinate(0);
+    point.y = ground[i].coordinate(1);
+    point.z = ground[i].coordinate(2);
+    centroid[0]+=ground[i].coordinate(0)/n;
+    centroid[1]+=ground[i].coordinate(1)/n;
+    centroid[2]+=ground[i].coordinate(2)/n;
     cloud->points.push_back(point);
 	}
 	cloud->width = (int) cloud->points.size ();
@@ -120,7 +120,6 @@ void best_fit_plane1(std::vector<point>& ground, std::vector<long double>& norma
     std::cout<<"Could not estimate a planar model for the given dataset.";
     return;
   }
-  normal.clear(); normal=std::vector<long double>(3, 0.0);
   normal[0]=coefficients->values[0];
   normal[1]=coefficients->values[1];
   normal[2]=coefficients->values[2];
