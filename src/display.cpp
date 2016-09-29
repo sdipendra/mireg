@@ -1,5 +1,6 @@
-#include <mireg.h>
-#include <pcl_visualizer.h>
+#include <mireg.hpp>
+#include <project_classes.hpp>
+#include <pcl_visualizer.hpp>
 
 bool file_read(std::string filename, std::vector<point>& cloud)
 {

@@ -55,16 +55,5 @@ const long double pi = 3.1415926535897932384626433832795028841971693993751058209
 //#define trr(container, it) for (decltype(container.rbegin()) it = container.rbegin(); it != container.rend(); it++)
 //#define dist(a, b) sqrtl(powl(ld(a.first - b.first), 2) + powl(ld(a.second - b.second), 2))
 
-struct point
-{
-	float x, y, z;
-	float nx, ny, nz;
-	float ref;
-	float gray;
-	void get_point(std::ifstream& file)
-	{
-		file>>x>>y>>z>>nx>>ny>>nz>>ref>>gray;
-	}
-};
 
 #endif

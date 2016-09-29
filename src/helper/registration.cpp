@@ -1,9 +1,10 @@
-#include <mireg.h>
-#include <pcl_visualizer.h>
-#include <transformation.h>
-#include <characteristic_map.h>
-#include <mutual_information.h>
-#include <registration.h>
+#include <mireg.hpp>
+#include <project_classes.hpp>
+#include <pcl_visualizer.hpp>
+#include <transformation.hpp>
+#include <characteristic_map.hpp>
+#include <mutual_information.hpp>
+#include <registration.hpp>
 
 typedef void (*characteristic_map_func)(std::vector<point>&, float, std::pair<pii, vvf>&);
 

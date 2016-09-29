@@ -1,4 +1,5 @@
-#include <mireg.h>
+#include <mireg.hpp>
+#include <project_classes.hpp>
 
 void ground_plane_extraction(std::vector<point>& complete, std::vector<point>& ground, std::vector<point>& rest);
 

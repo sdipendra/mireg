@@ -1,5 +1,6 @@
-#include <characteristic_map.h>
-#include <transformation.h>
+#include <project_classes.hpp>
+#include <characteristic_map.hpp>
+#include <transformation.hpp>
 
 void variance_map(std::vector<point>& cloud, float cell_size, std::pair<pii, vvf>& map)
 {

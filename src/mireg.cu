@@ -1,8 +1,8 @@
-#include <mireg.h>
-#include <pcl_visualizer.h>
-#include <pcl_helper.h>
-#include <transformation.h>
-#include <registration.h>
+#include <mireg.hpp>
+#include <pcl_visualizer.hpp>
+#include <pcl_helper.hpp>
+#include <transformation.hpp>
+#include <registration.hpp>
 
 //const float min_cell_size = 0.1;	// in metres
 //const int hist_size = 100;	// sampling size for histogram

@@ -1,4 +1,5 @@
-#include <mireg.h>
+#include <mireg.hpp>
+#include <project_classes.hpp>
 
 void plot(std::vector<std::vector<float>>& cloud);
 

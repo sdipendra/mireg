@@ -1,4 +1,4 @@
-#include <mutual_information.h>
+#include <mutual_information.hpp>
 
 const int low_filter = 1;	// Reject overly populated low values adjust the parameter
 
