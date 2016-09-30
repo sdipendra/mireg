@@ -99,7 +99,7 @@ boost::shared_ptr<pcl::visualization::PCLVisualizer> normalsVis (
 }
 
 
-boost::shared_ptr<pcl::visualization::PCLVisualizer> shapesVis (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud, std::vector<float>& normal, std::vector<float>& centroid)
+boost::shared_ptr<pcl::visualization::PCLVisualizer> shapesVis (pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud, std::vector<double>& normal, std::vector<double>& centroid)
 {
   // --------------------------------------------
   // -----Open 3D viewer and add point cloud-----
@@ -201,7 +201,7 @@ boost::shared_ptr<pcl::visualization::PCLVisualizer> interactionCustomizationVis
   return (viewer);
 }
 
-void plot(std::vector<std::vector<float>>& cloud)
+void plot(std::vector<std::vector<double>>& cloud)
 {
   int n=int(cloud.size());
   pcl::PointCloud<pcl::PointXYZ>::Ptr basic_cloud_ptr (new pcl::PointCloud<pcl::PointXYZ>);
@@ -226,7 +226,7 @@ void plot(std::vector<std::vector<float>>& cloud)
   }
 }
 
-void plot_ground(std::vector<std::vector<float>>& ground, std::vector<std::vector<float>>& rest)
+void plot_ground(std::vector<std::vector<double>>& ground, std::vector<std::vector<double>>& rest)
 {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -271,7 +271,7 @@ void plot_ground(std::vector<std::vector<float>>& ground, std::vector<std::vecto
   }
 }
 
-void plot_plane(std::vector<std::vector<float>>& ground, std::vector<std::vector<float>>& rest, std::vector<float>& normal, std::vector<float>& centroid)
+void plot_plane(std::vector<std::vector<double>>& ground, std::vector<std::vector<double>>& rest, std::vector<double>& normal, std::vector<double>& centroid)
 {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -316,7 +316,7 @@ void plot_plane(std::vector<std::vector<float>>& ground, std::vector<std::vector
   }
 }
 
-void plot_scans(std::vector<std::vector<float>>& reading, std::vector<std::vector<float>>& reference)
+void plot_scans(std::vector<std::vector<double>>& reading, std::vector<std::vector<double>>& reference)
 {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud1_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud2_ptr (new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -398,10 +398,10 @@ void plot_merged(std::vector<point>& reading, std::vector<point>& reference)
 	}
 }
 
-void plot_feature_map(std::pair<std::pair<int, int>, std::vector<std::vector<float>>>& map)
+void plot_feature_map(std::pair<std::pair<int, int>, std::vector<std::vector<double>>>& map)
 {
 	// Normalize the map to 0, 255;
-	float maxv = -std::numeric_limits<float>::max(), minv = std::numeric_limits<float>::max();
+	double maxv = -std::numeric_limits<double>::max(), minv = std::numeric_limits<double>::max();
 	for(decltype(map.second.begin()) it1=map.second.begin(); it1!=map.second.end(); ++it1)
 	{
 		for(decltype(it1->begin()) it2=it1->begin(); it2!=it1->end(); ++it2)
@@ -418,12 +418,12 @@ void plot_feature_map(std::pair<std::pair<int, int>, std::vector<std::vector<flo
 	}
 	minv=0.0;	// for not normalizing with respect to min;
 
-	std::vector<std::vector<float>> nmap(map.second);
+	std::vector<std::vector<double>> nmap(map.second);
 	for(int i=0; i < map.second.size(); i++)
 	{
 		for(int j=0; j < map.second[0].size(); j++)
 		{
-			nmap[i][j] = float(((map.second[i][j] - minv) * 255.0) / (maxv - minv));
+			nmap[i][j] = double(((map.second[i][j] - minv) * 255.0) / (maxv - minv));
 		}
 	}
 	
@@ -445,10 +445,10 @@ void plot_feature_map(std::pair<std::pair<int, int>, std::vector<std::vector<flo
 	cv::waitKey(0);
 }
 
-void plot_feature_map_merged(std::pair<std::pair<int, int>, std::vector<std::vector<float>>>& map1, std::pair<std::pair<int, int>, std::vector<std::vector<float>>>& map2)
+void plot_feature_map_merged(std::pair<std::pair<int, int>, std::vector<std::vector<double>>>& map1, std::pair<std::pair<int, int>, std::vector<std::vector<double>>>& map2)
 {
 	// Normalize the map to 0, 255;
-	float maxv = -std::numeric_limits<float>::max(), minv = std::numeric_limits<float>::max();
+	double maxv = -std::numeric_limits<double>::max(), minv = std::numeric_limits<double>::max();
 	for(decltype(map1.second.begin()) it1=map1.second.begin(); it1!=map1.second.end(); ++it1)
 	{
 		for(decltype(it1->begin()) it2=it1->begin(); it2!=it1->end(); ++it2)
@@ -465,12 +465,12 @@ void plot_feature_map_merged(std::pair<std::pair<int, int>, std::vector<std::vec
 	}
 	minv=0.0;	// for not normalizing with respect to min;
 
-	std::vector<std::vector<float>> nmap1(map1.second);
+	std::vector<std::vector<double>> nmap1(map1.second);
 	for(int i=0; i < map1.second.size(); i++)
 	{
 		for(int j=0; j < map1.second[0].size(); j++)
 		{
-			nmap1[i][j] = float(((map1.second[i][j] - minv) * 255.0) / (maxv - minv));
+			nmap1[i][j] = double(((map1.second[i][j] - minv) * 255.0) / (maxv - minv));
 		}
 	}
 	
@@ -487,7 +487,7 @@ void plot_feature_map_merged(std::pair<std::pair<int, int>, std::vector<std::vec
 		}
 	}
 	
-	maxv = -std::numeric_limits<float>::max(); minv = std::numeric_limits<float>::max();
+	maxv = -std::numeric_limits<double>::max(); minv = std::numeric_limits<double>::max();
 	for(decltype(map2.second.begin()) it1=map2.second.begin(); it1!=map2.second.end(); ++it1)
 	{
 		for(decltype(it1->begin()) it2=it1->begin(); it2!=it1->end(); ++it2)
@@ -504,12 +504,12 @@ void plot_feature_map_merged(std::pair<std::pair<int, int>, std::vector<std::vec
 	}
 	minv=0.0;	// for not normalizing with respect to min;
 
-	std::vector<std::vector<float>> nmap2(map2.second);
+	std::vector<std::vector<double>> nmap2(map2.second);
 	for(int i=0; i < map2.second.size(); i++)
 	{
 		for(int j=0; j < map2.second[0].size(); j++)
 		{
-			nmap2[i][j] = float(((map2.second[i][j] - minv) * 255.0) / (maxv - minv));
+			nmap2[i][j] = double(((map2.second[i][j] - minv) * 255.0) / (maxv - minv));
 		}
 	}
 	

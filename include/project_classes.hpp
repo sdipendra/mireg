@@ -12,4 +12,5 @@ struct point
 	void get_point(std::ifstream& file);
 };
 
+
 #endif

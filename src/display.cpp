@@ -86,10 +86,10 @@ int main(int argc, char** argv)
 			std::cout<<"File read failed!!!";
 			exit(1);
 		}
-		vvf points;
+		vvd points;
 		for(auto it=cloud.begin(); it!=cloud.end(); ++it)
 		{
-			vf temp(3);
+			vd temp(3);
 			temp[0]=it->coordinate(0); temp[1]=it->coordinate(1); temp[2]=it->coordinate(2);
 			points.push_back(temp);
 		}

@@ -6,13 +6,61 @@
 #include <mutual_information.hpp>
 #include <registration.hpp>
 
-typedef void (*characteristic_map_func)(std::vector<point>&, float, std::pair<pii, vvf>&);
-
-bool multires_registration(std::vector<point>& reading, std::vector<point>& reference, Eigen::Matrix4d& transformation_mat, float min_cell_size, int hist_size, std::string& map)
+void fill_sample_space(std::vector<Eigen::Vector3d>& states, int n_random_states, double step, double dist_to_angle, double dist_to_prob_dist)
 {
-//		void (*feature_map_func)(std::vector<point>&, float, std::pair<pii, vvf>&) = &variance_map;	//variance_map, reflectivity_map, grayscale_map, normals_map
-		std::vector<long double> map_weightage_coeff(4);
-		map_weightage_coeff[0]=7.0; map_weightage_coeff[1]=1.0; map_weightage_coeff[2]=1.0; map_weightage_coeff[3]=9.0;	// tune these values, and build correspondence even if only one feature_map_func is used
+	states.clear(); states.reserve(50+n_random_states);
+
+	Eigen::Vector3d temp;
+	
+	// uniformly selected states			
+	temp=Eigen::Vector3d(0.0, 0.0, step*dist_to_angle); states.push_back(temp);	// some problem here swapped angle modified funcs
+	temp=Eigen::Vector3d(0.0, 0.0, -step*dist_to_angle); states.push_back(temp); 
+	temp=Eigen::Vector3d(step, 0.0, 0.0); states.push_back(temp);
+	temp=Eigen::Vector3d(-step, 0.0, 0.0); states.push_back(temp);
+	temp=Eigen::Vector3d(0.0, step, 0.0); states.push_back(temp);
+	temp=Eigen::Vector3d(0.0, -step, 0.0); states.push_back(temp);
+
+	temp=Eigen::Vector3d(step, 0.0, step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(-step, 0.0, step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(step, 0.0, -step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(-step, 0.0, -step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(0.0, step, step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(0.0, -step, step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(0.0, step, -step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(0.0, -step, -step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(step, step, 0.0); states.push_back(temp);
+	temp=Eigen::Vector3d(step, -step, 0.0); states.push_back(temp);
+	temp=Eigen::Vector3d(-step, step, 0.0); states.push_back(temp);
+	temp=Eigen::Vector3d(-step, -step, 0.0); states.push_back(temp);
+
+	temp=Eigen::Vector3d(step, step, step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(step, -step, step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(-step, step, step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(-step, -step, step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(step, step, -step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(step, -step, -step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(-step, step, -step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(-step, -step, -step*dist_to_angle); states.push_back(temp);
+												
+	// randomly selected states
+	std::random_device rd;
+	std::mt19937 eng(rd());
+	std::uniform_real_distribution<> distr(0.0, step*dist_to_prob_dist);
+	for(int i=0; i<n_random_states; ++i)
+	{
+		temp=Eigen::Vector3d(distr(eng), distr(eng), distr(eng)*dist_to_angle);
+		states.push_back(temp);
+	}
+}
+
+// Improve routine to use data judiciously and avoid too much copying
+bool multires_registration(std::vector<point>& reading, std::vector<point>& reference, Eigen::Matrix4d& transformation_mat, double min_cell_size, int hist_size, std::string& map)
+{
+		//variance_map, reflectivity_map, grayscale_map, normals_map
+		std::vector<double> map_weightage_coeff(4);
+		map_weightage_coeff[0]=7.0; map_weightage_coeff[1]=1.0; map_weightage_coeff[2]=1.0; map_weightage_coeff[3]=9.0;
+		
+		typedef void (*characteristic_map_func)(std::vector<point>&, double, std::pair<pii, vvd>&);
 		std::vector<characteristic_map_func> feature_map_func;
 		if(map=="all")
 		{
@@ -41,106 +89,55 @@ bool multires_registration(std::vector<point>& reading, std::vector<point>& refe
 		{
 			return false;
 		}
-		
-		struct transformation_state
-		{
-			long double alpha, x, y;
-			transformation_state operator+(const transformation_state& rhs)
-			{
-				return transformation_state(this->alpha+rhs.alpha, this->x+rhs.x, this->y+rhs.y);
-			}
-			transformation_state& operator=(const transformation_state& rhs)
-			{
-				this->alpha=rhs.alpha; this->x=rhs.x; this->y=rhs.y;
-				return *this;
-			}
-			transformation_state(long double nalpha, long double nx, long double ny)
-			{
-				this->alpha=nalpha; this->x=nx; this->y=ny;
-			}
-		};
-		
-		float dist_to_angle=0.05235987756, dist_to_prob_dist=5.0;	// fine tune dist_to_prob_dist
+				
+		double dist_to_angle=0.05235987756, dist_to_prob_dist=5.0;	// fine tune dist_to_prob_dist
 		int n_random_states=0;	// add later
-		float step_ratio=2.0, cell_reduction_constant=2.0;
+		double step_ratio=2.0, cell_reduction_constant=2.0;
 		
-		float cell_size=3.0;
-		float step_coeff=2.0;
+		double cell_size=3.0;
+		double step_coeff=2.0;
 
-		transformation_state best_transformation(0.0, 0.0, 0.0);
+		Eigen::Vector3d best_transformation(0.0, 0.0, 0.0);
 		while(cell_size>=min_cell_size/2.0)
 		{
-			float step=cell_size*step_coeff;
-//			float smallest=cell_size/(2.0*dist_to_prob_dist);
-			float smallest=cell_size/4.0;
+			double step=cell_size*step_coeff;
+//			double smallest=cell_size/(2.0*dist_to_prob_dist);
+			double smallest=cell_size/4.0;
 			
-			std::vector<point> r(reading);
-			build_transform(transformation_mat, best_transformation.alpha, best_transformation.x, best_transformation.y);
+			std::vector<point> r(reading);	// TODO: MODIFY THIS IT COPIES DATA TOO MANY TIMES CAUSING THE PROGRAM TO RUN SLOW
+			build_transform_z(transformation_mat, best_transformation);
 			transform(r, transformation_mat);
-			std::pair<pii, vvf> feature_map1, feature_map2;
+			std::pair<pii, vvd> feature_map1, feature_map2;
 			ld best_mi=0.0;
 			for(int mit=0; mit<int(feature_map_func.size()); ++mit)
 			{
 				feature_map_func[mit](r, cell_size, feature_map1);
 				feature_map_func[mit](reference, cell_size, feature_map2);
-				long double temp=map_weightage_coeff[mit]*mutual_information(feature_map1, feature_map2, hist_size);
+				double temp=map_weightage_coeff[mit]*mutual_information(feature_map1, feature_map2, hist_size);
 				best_mi+=temp;
 			}
 			while(step>smallest)
 			{
-				std::vector<transformation_state> states;
+				std::vector<Eigen::Vector3d> states;
 			
-				// uniformly selected states
-				states.push_back(transformation_state(step*dist_to_angle, 0.0, 0.0));
-				states.push_back(transformation_state(-step*dist_to_angle, 0.0, 0.0));
-				states.push_back(transformation_state(0.0, step, 0.0));
-				states.push_back(transformation_state(0.0, -step, 0.0));
-				states.push_back(transformation_state(0.0, 0.0, step));
-				states.push_back(transformation_state(0.0, 0.0, -step));
-
-				states.push_back(transformation_state(step*dist_to_angle, step, 0.0));
-				states.push_back(transformation_state(step*dist_to_angle, -step, 0.0));
-				states.push_back(transformation_state(-step*dist_to_angle, step, 0.0));
-				states.push_back(transformation_state(-step*dist_to_angle, -step, 0.0));
-				states.push_back(transformation_state(step*dist_to_angle, 0.0, step));
-				states.push_back(transformation_state(step*dist_to_angle, 0.0, -step));
-				states.push_back(transformation_state(-step*dist_to_angle, 0.0, step));
-				states.push_back(transformation_state(-step*dist_to_angle, 0.0, -step));
-				states.push_back(transformation_state(0.0, step, step));
-				states.push_back(transformation_state(0.0, step, -step));
-				states.push_back(transformation_state(0.0, -step, step));
-				states.push_back(transformation_state(0.0, -step, -step));
-
-				states.push_back(transformation_state(step*dist_to_angle, step, step));
-				states.push_back(transformation_state(step*dist_to_angle, step, -step));
-				states.push_back(transformation_state(step*dist_to_angle, -step, step));
-				states.push_back(transformation_state(step*dist_to_angle, -step, -step));
-				states.push_back(transformation_state(-step*dist_to_angle, step, step));
-				states.push_back(transformation_state(-step*dist_to_angle, step, -step));
-				states.push_back(transformation_state(-step*dist_to_angle, -step, step));
-				states.push_back(transformation_state(-step*dist_to_angle, -step, -step));
-								
-				// randomly selected states
-				std::random_device rd; // obtain a random number from hardware
-				std::mt19937 eng(rd()); // seed the generator
-				std::uniform_real_distribution<> distr(0.0, step*dist_to_prob_dist); // define the range
-				for(int i=0; i<n_random_states; ++i) states.push_back(transformation_state(distr(eng)*dist_to_angle, distr(eng), distr(eng)));
+				fill_sample_space(states, n_random_states, step, dist_to_angle, dist_to_prob_dist);	// check the implementation
 			
 				ld better_mi=best_mi;
-				transformation_state better_transformation(0.0, 0.0, 0.0);
+				Eigen::Vector3d better_transformation(0.0, 0.0, 0.0);
 				int n_selection=-1;
 				for(int i=0; i<int(states.size()); ++i)
 				{
 					r.clear();
 					r=reading;
-					build_transform(transformation_mat, best_transformation.alpha+states[i].alpha, best_transformation.x+states[i].x, best_transformation.y+states[i].y);
+					Eigen::Vector3d new_transformation_state = best_transformation + states[i];
+					build_transform_z(transformation_mat, new_transformation_state);
 					transform(r, transformation_mat);
 					ld mi=0.0;
 					for(int mit=0; mit<int(feature_map_func.size()); ++mit)
 					{
 						feature_map_func[mit](r, cell_size, feature_map1);
 						feature_map_func[mit](reference, cell_size, feature_map2);
-						long double temp=map_weightage_coeff[mit]*mutual_information(feature_map1, feature_map2, hist_size);
+						double temp=map_weightage_coeff[mit]*mutual_information(feature_map1, feature_map2, hist_size);
 						mi+=temp;
 					}
 					if(mi>better_mi)
@@ -156,7 +153,7 @@ bool multires_registration(std::vector<point>& reading, std::vector<point>& refe
 					best_transformation=better_transformation;
 					if(n_selection>=int(states.size()-n_random_states))
 					{
-						if(states[n_selection].x>step) step=states[n_selection].x;
+						if(states[n_selection](0)>step) step=states[n_selection](0);
 					}
 					step*=step_ratio;
 				}
@@ -167,7 +164,7 @@ bool multires_registration(std::vector<point>& reading, std::vector<point>& refe
 			}
 			cell_size/=cell_reduction_constant;
 		}
-		build_transform(transformation_mat, best_transformation.alpha, best_transformation.x, best_transformation.y);
+		build_transform_z(transformation_mat, best_transformation);
 		transform(reading, transformation_mat);
 		return true;
 }

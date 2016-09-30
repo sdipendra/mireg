@@ -4,16 +4,16 @@
 #include <transformation.hpp>
 #include <registration.hpp>
 
-const float min_cell_size = 0.1;	// in metres
+const double min_cell_size = 0.1;	// in metres
 const int hist_size = 100;	// sampling size for histogram
 
 bool file_read(std::string filename, std::vector<point>& cloud)
 {
 	std::ifstream file(filename);
-	cloud.clear();
+	cloud.clear(); cloud.reserve(1e5);
 	if(file.is_open())
 	{
-		float frame; file>>frame;
+		double frame; file>>frame;
 		point temp; temp.get_point(file);
 		while(!file.eof())
 		{
@@ -29,9 +29,7 @@ bool file_read(std::string filename, std::vector<point>& cloud)
 	}
 }
 
-
-
-bool file_write(std::string filename, std::vector<long double>& euler_rep)	//TODO: modify
+bool file_write(std::string filename, std::vector<double>& euler_rep)
 {
 	std::ofstream file(filename);
 	if(file.is_open())
@@ -48,24 +46,6 @@ bool file_write(std::string filename, std::vector<long double>& euler_rep)	//TOD
 		return false;
 	}
 }
-
-
-
-
-
-void print_transform(std::vector<std::vector<long double>>& transformation_mat)	//TODO: modify
-{
-	for(int i=0; i<4; ++i)
-	{
-		for(int j=0; j<4; ++j)
-		{
-			std::cout<<transformation_mat[i][j]<<"\t\t";
-		}
-		std::cout<<std::endl;
-	}
-}
-
-
 
 int main(int argc, char** argv)
 {
@@ -84,97 +64,59 @@ int main(int argc, char** argv)
 		{
 			std::cout<<"File read failed!!!"; exit(1);	// write these error messages to the output file
 		}
-		
-		plot_merged(reading, reference);
 
+//		ORIGINAL
+//		plot_merged(reading, reference);
+		Eigen::Vector3d z_axis(0, 0, 1), origin(0, 0, 0);
 
-//		std::vector<std::vector<long double>> transformation_mat1, transformation_mat2, transformation_mat3;
-		Eigen::Matrix4d transformation_mat1, transformation_mat2, transformation_mat3;
+		std::vector<point> ground2, rest2;
+		ground_plane_extraction(reference, ground2, rest2);	// Find the transform to align reference plane to plane z=0 and apply		
+		Eigen::Vector3d normal2, centroid2;
+		best_fit_plane1(ground2, normal2, centroid2);	// best_fit_plane
+		Eigen::Matrix4d transformation_mat1;
+		build_transform_xy(transformation_mat1, normal2, centroid2, z_axis, origin);
+		transform(reading, transformation_mat1); transform(reference, transformation_mat1);
 
-
-
-		std::vector<point> ground1, ground2, rest1, rest2;
-
-
-//		std::vector<long double> normal1, normal2, centroid1, centroid2;	//TODO: modify
-		Eigen::Vector3d normal1, normal2, centroid1, centroid2;
-//		std::vector<long double> z_axis(3, 0.0); z_axis[2]=1.0;
-		Eigen::Vector3d z_axis(0, 0, 1);
-//		std::vector<long double> origin(3, 0.0);
-		Eigen::Vector3d origin(0, 0, 0);
-		
-		// Find the transform to align reference plane to plane z=0 and apply
 		ground_plane_extraction(reference, ground2, rest2);
-
-
-		best_fit_plane1(ground2, normal2, centroid2);	// best_fit_plane //TODO: modify
-
-
-		build_transform_normal(transformation_mat1, normal2, z_axis);	// TODO: modify
-
-
-		transform(reading, transformation_mat1); transform(reference, transformation_mat1);	//TODO: modify
-
-
-		
-		ground_plane_extraction(reference, ground2, rest2);
-
-
-		best_fit_plane1(ground2, normal2, centroid2);	//TODO: modify
-//		std::vector<std::vector<long double>> new_transformation_mat1;
+		best_fit_plane1(ground2, normal2, centroid2);
 		Eigen::Matrix4d new_transformation_mat1;
-		build_transform_centroid(new_transformation_mat1, normal2, centroid2, z_axis, origin);
+		build_transform_xy(new_transformation_mat1, normal2, centroid2, z_axis, origin);
 		transform(reading, new_transformation_mat1); transform(reference, new_transformation_mat1);
-//		transformation_mat1=mat_multi(new_transformation_mat1, transformation_mat1);
-		transformation_mat1=new_transformation_mat1*transformation_mat1;
 
+		transformation_mat1 = new_transformation_mat1 * transformation_mat1;
 		
-		// Find the transform to align reading plane to plane z=0 and apply
-		ground_plane_extraction(reading, ground1, rest1);
-
-
-		best_fit_plane1(ground1, normal1, centroid1);	// best_fit_plane
-		build_transform_normal(transformation_mat2, normal1, z_axis);	//TODO: modify
+		std::vector<point> ground1, rest1;
+		ground_plane_extraction(reading, ground1, rest1);	// Find the transform to align reading plane to plane z=0 and apply
+		Eigen::Vector3d normal1, centroid1;
+		best_fit_plane1(ground1, normal1, centroid1);
+		Eigen::Matrix4d transformation_mat2;
+		build_transform_xy(transformation_mat2, normal1, centroid1, z_axis, origin);
 		transform(reading, transformation_mat2);
 
-
-		
 		ground_plane_extraction(reading, ground1, rest1);
-
-
-		best_fit_plane1(ground1, normal1, centroid1);	//TODO: modify
-//		std::vector<std::vector<long double>> new_transformation_mat2;
+		best_fit_plane1(ground1, normal1, centroid1);
 		Eigen::Matrix4d new_transformation_mat2;
-		build_transform_centroid(new_transformation_mat2, normal1, centroid1, z_axis, origin);
+		build_transform_xy(new_transformation_mat2, normal1, centroid1,  z_axis, origin);
 		transform(reading, new_transformation_mat2);
-//		transformation_mat2=mat_multi(new_transformation_mat2, transformation_mat2);
+
 		transformation_mat2 = new_transformation_mat2 * transformation_mat2;
 
+		// GROUND PLANES ALLIGNED
+//		plot_merged(reading, reference);
 
-
-		plot_merged(reading, reference);
 		std::string map(argv[3]);
-
-
-		if(!multires_registration(reading, reference, transformation_mat3, min_cell_size, hist_size, map))	//TODO: modify
+		Eigen::Matrix4d transformation_mat3;
+		if(!multires_registration(reading, reference, transformation_mat3, min_cell_size, hist_size, map))
 		{
 			std::cout<<"Incorrect 3rd argument passed"<<std::endl;
 			return 1;
 		}		
-//		std::vector<std::vector<long double>> transformation_mat, temp;
-		Eigen::Matrix4d transformation_mat, temp;
-		temp=mat_inv(transformation_mat1);
-//		temp=mat_multi(temp, transformation_mat3);
-		temp=temp * transformation_mat3;
-//		temp=mat_multi(temp, transformation_mat2);
-		temp=temp * transformation_mat2;
-//		transformation_mat=mat_multi(temp, transformation_mat1);
-		transformation_mat=temp * transformation_mat1;
 
-		
-		std::string output_name(map); output_name.push_back('_');
+		Eigen::Matrix4d transformation_mat;
+		transformation_mat=transformation_mat1.inverse()*transformation_mat3*transformation_mat2*transformation_mat1;
+
+		std::string output_name(map); output_name.push_back('_');	// Can try regular expressions
 		std::string f1(argv[1]), f2(argv[2]);
-
 		std::string s1, s2;
 		s1.push_back(f1[f1.size()-8]); s1.push_back(f1[f1.size()-7]); s1.push_back(f1[f1.size()-6]); s1.push_back(f1[f1.size()-5]);
 		output_name.append(s1);
@@ -182,28 +124,13 @@ int main(int argc, char** argv)
 		s2.push_back(f2[f2.size()-8]); s2.push_back(f2[f2.size()-7]); s2.push_back(f2[f2.size()-6]); s2.push_back(f2[f2.size()-5]);
 		output_name.append(s2);
 		output_name.append("_result.txt");
-		
-//		file_write(output_name, transformation_mat);
-		
 
-
-		std::vector<long double> ans = euler_rep(transformation_mat);	//TODO: modify
-
-
-		/*
-		for(int i=0; i<6; ++i)
-		{
-			std::cout<<ans[i]<<" ";
-		}
-		std::cout<<std::endl;
-		*/
-
-
-		file_write(output_name, ans);	//TODO: modify
+		std::vector<double> ans = euler_rep(transformation_mat);	// Use Eigen implementation to calculate euler_rep
+		file_write(output_name, ans);
 		std::cout<<map<<" "<<s1<<" "<<s2<<" "<<ans[0]<<" "<<ans[1]<<" "<<ans[2]<<" "<<ans[3]<<" "<<ans[4]<<" "<<ans[5]<<std::endl;
 
-
-		plot_merged(reading, reference);
+		// RESULT
+//		plot_merged(reading, reference);
 	}
 	return 0;
 }

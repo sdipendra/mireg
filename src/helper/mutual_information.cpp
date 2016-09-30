@@ -2,7 +2,7 @@
 
 const int low_filter = 1;	// Reject overly populated low values adjust the parameter
 
-ld mutual_information(std::pair<pii, vvf>& feature_map1,std::pair<pii, vvf>& feature_map2, int hist_size)
+ld mutual_information(std::pair<pii, vvd>& feature_map1,std::pair<pii, vvd>& feature_map2, int hist_size)
 {
 	int rows1 = feature_map1.second.size();
 	int cols1 = feature_map1.second[0].size();
@@ -29,7 +29,7 @@ ld mutual_information(std::pair<pii, vvf>& feature_map1,std::pair<pii, vvf>& fea
 	
 	float bin_size=(maxi-mini)/(hist_size-1);
 	
-	vf hist1(hist_size, 0.0);
+	vd hist1(hist_size, 0.0);
 	int hist1_count=0;
 	for(int i=0; i<rows1; ++i)
 	{
@@ -44,7 +44,7 @@ ld mutual_information(std::pair<pii, vvf>& feature_map1,std::pair<pii, vvf>& fea
 	}
 	for(int i=0; i<hist_size; ++i) hist1[i]/=float(hist1_count);	// normalization
 	
-	vf hist2(hist_size, 0.0);
+	vd hist2(hist_size, 0.0);
 	int hist2_count=0;
 	for(int i=0; i<rows2; ++i)
 	{
@@ -59,7 +59,7 @@ ld mutual_information(std::pair<pii, vvf>& feature_map1,std::pair<pii, vvf>& fea
 	}
 	for(int i=0; i<hist_size; ++i) hist2[i]/=float(hist2_count);	// normalization
 	
-	vvf hist_joint(hist_size, vf(hist_size, 0.0));
+	vvd hist_joint(hist_size, vd(hist_size, 0.0));
 	int hist_joint_count=0;
 
 	for(int i1=0; i1<rows1; ++i1)
