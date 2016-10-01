@@ -39,4 +39,11 @@ Current code is only a serial implementation. My first target will be to organis
 
 Once, all that is done I will design the parallel version of the program and work on it's implementation.
 
+Join me on gitter to discuss and share ideas.
+
+1. https://gitter.im/mireg/Lobby
+2. https://gitter.im/mireg/ideas
+3. https://gitter.im/mireg/Progress
+4. https://gitter.im/mireg/doubts
+
 ## Most importantly please feel free to contribute, offer suggestions and crticize the current work.
