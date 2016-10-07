@@ -1,4 +1,6 @@
 # Mireg
+
+[![Join the chat at https://gitter.im/mireg/Lobby](https://badges.gitter.im/mireg/Lobby.svg)](https://gitter.im/mireg/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 This project is mainly focused on registering 3D Laser Scans using Mutual Information and GPU parallelization of computations.
 
 1. Current program uses 3D Laser Scan point cloud data and corresponding Camera data for registration of 2 Laser scans.
@@ -36,5 +38,12 @@ This is very crude information. I will improve it on request and on my own as I 
 Current code is only a serial implementation. My first target will be to organise the code properly so others can understand it. After that I will work on improving the serial implementation by using more effecient routines.
 
 Once, all that is done I will design the parallel version of the program and work on it's implementation.
+
+Join me on gitter to discuss and share ideas.
+
+1. https://gitter.im/mireg/Lobby
+2. https://gitter.im/mireg/ideas
+3. https://gitter.im/mireg/Progress
+4. https://gitter.im/mireg/doubts
 
 ## Most importantly please feel free to contribute, offer suggestions and crticize the current work.
