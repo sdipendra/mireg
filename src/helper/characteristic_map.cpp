@@ -2,260 +2,110 @@
 #include <characteristic_map.hpp>
 #include <transformation.hpp>
 
-void variance_map(std::vector<point>& cloud, double cell_size, std::pair<pii, vvd>& map)
+void variance_map(std::vector<point>& cloud, double cell_size, std::vector<std::pair<pii, double>>& feature_map)
 {
-	double maxx=-std::numeric_limits<double>::max(), maxy=-std::numeric_limits<double>::max(), maxz=-std::numeric_limits<double>::max();
-	double minx=std::numeric_limits<double>::max(), miny=std::numeric_limits<double>::max(), minz=std::numeric_limits<double>::max();
-	for(auto it : cloud)
-	{
-/*
-		if(it.x>maxx) maxx=it.x;
-		if(it.y>maxy) maxy=it.y;
-		if(it.z>maxz) maxz=it.z;
-		if(it.x<minx) minx=it.x;
-		if(it.y<miny) miny=it.y;
-		if(it.z<minz) minz=it.z;
-*/
-		if(it.coordinate(0)>maxx) maxx=it.coordinate(0);
-		if(it.coordinate(1)>maxy) maxy=it.coordinate(1);
-		if(it.coordinate(2)>maxz) maxz=it.coordinate(2);
-		if(it.coordinate(0)<minx) minx=it.coordinate(0);
-		if(it.coordinate(1)<miny) miny=it.coordinate(1);
-		if(it.coordinate(2)<minz) minz=it.coordinate(2);
-	}
 	std::vector<point> ground, rest;
-	ground_plane_extraction(cloud, ground, rest);
-	
-	int rows=(1.5*cell_size+maxx)/cell_size+(0.5*cell_size-minx)/cell_size, cols=(1.5*cell_size+maxy)/cell_size+(0.5*cell_size-miny)/cell_size;
-	map.first.first=(0.5*cell_size-minx)/cell_size, map.first.second=(0.5*cell_size-miny)/cell_size;
-	
-	map.second.clear();
-	map.second=vvd(rows, vd(cols, 0.0));
-	vvi point_count(rows, vi(cols, 0));
+	ground_plane_extraction(cloud, ground, rest);	//TODO: Give proof of correctness that ground points give irrelevant information, if possible extend it to reflectivity_map, grayscale_map and normal_map as it decreases runtime by half as the data points are reduced by approximately half.
 
-	for(auto it : rest)
+	int size = rest.size();
+	feature_map.clear(); feature_map = std::vector<std::pair<pii, double>>(size);
+	for(int i=0; i<size; ++i)
 	{
-/*
-		int x=(it.x-minx+0.5*cell_size)/cell_size, y=(it.y-miny+0.5*cell_size)/cell_size;
-		map.second[x][y]+=it.z*it.z;
-		point_count[x][y]++;
-*/
-		int x=(it.coordinate(0)-minx+0.5*cell_size)/cell_size, y=(it.coordinate(1)-miny+0.5*cell_size)/cell_size;
-		map.second[x][y]+=it.coordinate(2)*it.coordinate(2);
-		point_count[x][y]++;
+		int x=(rest[i].coordinate(0)+0.5*cell_size)/cell_size, y=(rest[i].coordinate(1)+0.5*cell_size)/cell_size;
+		double value = rest[i].coordinate(2) * rest[i].coordinate(2);
+		feature_map[i] = mp(mp(x, y), value);
 	}
-
-	for(int i=0; i<rows; ++i) for(int j=0; j<cols; ++j) if(point_count[i][j]!=0) map.second[i][j]/=double(point_count[i][j]);
 }
 
-void reflectivity_map(std::vector<point>& cloud, double cell_size, std::pair<pii, vvd>& map)
+void reflectivity_map(std::vector<point>& cloud, double cell_size, std::vector<std::pair<pii, double>>& feature_map)
 {
-	double maxx=-std::numeric_limits<double>::max(), maxy=-std::numeric_limits<double>::max(), maxz=-std::numeric_limits<double>::max();
-	double minx=std::numeric_limits<double>::max(), miny=std::numeric_limits<double>::max(), minz=std::numeric_limits<double>::max();
-	for(auto it : cloud)
+	int size = cloud.size();
+	feature_map.clear(); feature_map = std::vector<std::pair<pii, double>>(size);
+	for(int i=0; i<size; ++i)
 	{
-/*
-		if(it.x>maxx) maxx=it.x;
-		if(it.y>maxy) maxy=it.y;
-		if(it.z>maxz) maxz=it.z;
-		if(it.x<minx) minx=it.x;
-		if(it.y<miny) miny=it.y;
-		if(it.z<minz) minz=it.z;
-*/
-		if(it.coordinate(0)>maxx) maxx=it.coordinate(0);
-		if(it.coordinate(1)>maxy) maxy=it.coordinate(1);
-		if(it.coordinate(2)>maxz) maxz=it.coordinate(2);
-		if(it.coordinate(0)<minx) minx=it.coordinate(0);
-		if(it.coordinate(1)<miny) miny=it.coordinate(1);
-		if(it.coordinate(2)<minz) minz=it.coordinate(2);
+		int x=(cloud[i].coordinate(0)+0.5*cell_size)/cell_size, y=(cloud[i].coordinate(1)+0.5*cell_size)/cell_size;
+		double value = cloud[i].ref * cloud[i].ref;
+		feature_map[i] = mp(mp(x, y), value);
 	}
-	
-	int rows=(1.5*cell_size+maxx)/cell_size+(0.5*cell_size-minx)/cell_size, cols=(1.5*cell_size+maxy)/cell_size+(0.5*cell_size-miny)/cell_size;
-	map.first.first=(0.5*cell_size-minx)/cell_size, map.first.second=(0.5*cell_size-miny)/cell_size;
-	
-	map.second.clear();
-	map.second=vvd(rows, vd(cols, 0.0));
-	vvi point_count(rows, vi(cols, 0));
-
-	for(auto it : cloud)
-	{
-/*
-		int x=(it.x-minx+0.5*cell_size)/cell_size, y=(it.y-miny+0.5*cell_size)/cell_size;
-		map.second[x][y]+=it.ref*it.ref;
-		point_count[x][y]++;
-*/
-		int x=(it.coordinate(0)-minx+0.5*cell_size)/cell_size, y=(it.coordinate(1)-miny+0.5*cell_size)/cell_size;
-		map.second[x][y]+=it.ref*it.ref;
-		point_count[x][y]++;
-	}
-
-	for(int i=0; i<rows; ++i) for(int j=0; j<cols; ++j) if(point_count[i][j]!=0) map.second[i][j]/=double(point_count[i][j]);
 }
 
-void grayscale_map(std::vector<point>& cloud, double cell_size, std::pair<pii, vvd>& map)
+void grayscale_map(std::vector<point>& cloud, double cell_size, std::vector<std::pair<pii, double>>& feature_map)
 {
-	double maxx=-std::numeric_limits<double>::max(), maxy=-std::numeric_limits<double>::max(), maxz=-std::numeric_limits<double>::max();
-	double minx=std::numeric_limits<double>::max(), miny=std::numeric_limits<double>::max(), minz=std::numeric_limits<double>::max();
-	for(auto it : cloud)
+	int size = cloud.size();
+	feature_map.clear(); feature_map = std::vector<std::pair<pii, double>>(size);
+	for(int i=0; i<size; ++i)
 	{
-/*
-		if(it.x>maxx) maxx=it.x;
-		if(it.y>maxy) maxy=it.y;
-		if(it.z>maxz) maxz=it.z;
-		if(it.x<minx) minx=it.x;
-		if(it.y<miny) miny=it.y;
-		if(it.z<minz) minz=it.z;
-*/
-		if(it.coordinate(0)>maxx) maxx=it.coordinate(0);
-		if(it.coordinate(1)>maxy) maxy=it.coordinate(1);
-		if(it.coordinate(2)>maxz) maxz=it.coordinate(2);
-		if(it.coordinate(0)<minx) minx=it.coordinate(0);
-		if(it.coordinate(1)<miny) miny=it.coordinate(1);
-		if(it.coordinate(2)<minz) minz=it.coordinate(2);
+		int x=(cloud[i].coordinate(0)+0.5*cell_size)/cell_size, y=(cloud[i].coordinate(1)+0.5*cell_size)/cell_size;
+		double value = cloud[i].gray * cloud[i].gray;
+		feature_map[i] = mp(mp(x, y), value);
 	}
-	
-	int rows=(1.5*cell_size+maxx)/cell_size+(0.5*cell_size-minx)/cell_size, cols=(1.5*cell_size+maxy)/cell_size+(0.5*cell_size-miny)/cell_size;
-	map.first.first=(0.5*cell_size-minx)/cell_size, map.first.second=(0.5*cell_size-miny)/cell_size;
-	
-	map.second.clear();
-	map.second=vvd(rows, vd(cols, 0.0));
-	vvi point_count(rows, vi(cols, 0));
-
-	for(auto it : cloud)
-	{
-/*
-		int x=(it.x-minx+0.5*cell_size)/cell_size, y=(it.y-miny+0.5*cell_size)/cell_size;
-		map.second[x][y]+=it.gray*it.gray;
-		point_count[x][y]++;
-*/
-		int x=(it.coordinate(0)-minx+0.5*cell_size)/cell_size, y=(it.coordinate(1)-miny+0.5*cell_size)/cell_size;
-		map.second[x][y]+=it.gray*it.gray;
-		point_count[x][y]++;
-	}
-
-	for(int i=0; i<rows; ++i) for(int j=0; j<cols; ++j) if(point_count[i][j]!=0) map.second[i][j]/=double(point_count[i][j]);
 }
 
-void normal_map(std::vector<point>& cloud, double cell_size, std::pair<pii, vvd>& map)
+void normal_map(std::vector<point>& cloud, double cell_size, std::vector<std::pair<pii, double>>& feature_map)
 {
-	double maxx=-std::numeric_limits<double>::max(), maxy=-std::numeric_limits<double>::max(), maxz=-std::numeric_limits<double>::max();
-	double minx=std::numeric_limits<double>::max(), miny=std::numeric_limits<double>::max(), minz=std::numeric_limits<double>::max();
-	for(auto it : cloud)
+	int size = cloud.size();
+	std::vector<std::pair<pii, Eigen::Vector3d>> normals; normals.reserve(size);
+	for(int i=0; i<size; ++i)
 	{
-/*
-		if(it.x>maxx) maxx=it.x;
-		if(it.y>maxy) maxy=it.y;
-		if(it.z>maxz) maxz=it.z;
-		if(it.x<minx) minx=it.x;
-		if(it.y<miny) miny=it.y;
-		if(it.z<minz) minz=it.z;
-*/
-		if(it.coordinate(0)>maxx) maxx=it.coordinate(0);
-		if(it.coordinate(1)>maxy) maxy=it.coordinate(1);
-		if(it.coordinate(2)>maxz) maxz=it.coordinate(2);
-		if(it.coordinate(0)<minx) minx=it.coordinate(0);
-		if(it.coordinate(1)<miny) miny=it.coordinate(1);
-		if(it.coordinate(2)<minz) minz=it.coordinate(2);
-	}
-	
-	int rows=(1.5*cell_size+maxx)/cell_size+(0.5*cell_size-minx)/cell_size, cols=(1.5*cell_size+maxy)/cell_size+(0.5*cell_size-miny)/cell_size;
-	map.first.first=(0.5*cell_size-minx)/cell_size, map.first.second=(0.5*cell_size-miny)/cell_size;
-	
-	struct norm
-	{
-		double nx, ny, nz;
-		norm()
+		int x=(cloud[i].coordinate(0)+0.5*cell_size)/cell_size, y=(cloud[i].coordinate(1)+0.5*cell_size)/cell_size;
+		Eigen::Vector3d value = cloud[i].normal;
+		if(value!=Eigen::Vector3d::Zero())
 		{
-			nx=0.0; ny=0.0; nz=0.0;
+			value.normalize();
+			normals.push_back(mp(mp(x, y), value));	// handle upcoming for loops
 		}
-	};
-	std::vector<std::vector<norm>> mean_norms(rows, std::vector<norm>(cols, norm()));
-	vvi points_count(rows, vi(cols, 0));
-	for(auto it : cloud)
-	{
-/*
-		int x=(it.x-minx+0.5*cell_size)/cell_size, y=(it.y-miny+0.5*cell_size)/cell_size;
-		mean_norms[x][y].nx+=it.nx;
-		mean_norms[x][y].ny+=it.ny;
-		mean_norms[x][y].nz+=it.nz;
-		++points_count[x][y];
-*/
-		int x=(it.coordinate(0)-minx+0.5*cell_size)/cell_size, y=(it.coordinate(1)-miny+0.5*cell_size)/cell_size;
-		mean_norms[x][y].nx+=it.normal(0);
-		mean_norms[x][y].ny+=it.normal(1);
-		mean_norms[x][y].nz+=it.normal(2);
-		++points_count[x][y];
 	}
-	for(int i=0; i<rows; ++i)
+	
+	struct normals_comp
 	{
-		for(int j=0; j<cols; ++j)
+		bool operator()(const std::pair<pii, Eigen::Vector3d>& lhs, const std::pair<pii, Eigen::Vector3d>& rhs)
 		{
-			if(points_count[i][j]!=0)
+			if(lhs.first < rhs.first) return true;
+			else return false;
+		}
+	} my_comp;
+
+	std::sort(normals.begin(), normals.end(), my_comp);
+	normals.push_back(mp(mp(std::numeric_limits<int>::max(), std::numeric_limits<int>::max()), Eigen::Vector3d::Zero()));
+	int normals_size = normals.size();
+	pii curr = normals[0].first;
+	Eigen::Vector3d mean = normals[0].second;
+	int count=1, prev=0;
+	feature_map.clear(); feature_map.reserve(normals_size);
+	for(int i=1; i<normals_size; ++i)
+	{
+		if(normals[i].first != curr)
+		{
+			mean /= count;
+			mean.normalize();
+			Eigen::Matrix3d mat = Eigen::Matrix3d::Zero();
+			for(int j=prev; j<i; ++j)
 			{
-				mean_norms[i][j].nx/=double(points_count[i][j]);
-				mean_norms[i][j].ny/=double(points_count[i][j]);
-				mean_norms[i][j].nz/=double(points_count[i][j]);
+				mat += (normals[j].second - mean)*(normals[j].second - mean).transpose();
 			}
+			mat /= count;
+			double data[] = {mat(0, 0), mat(0, 1), mat(0, 2),
+			mat(1, 0), mat(1, 1), mat(1, 2),
+			mat(2, 0), mat(2, 1), mat(2, 2)};
+			gsl_matrix_view m = gsl_matrix_view_array(data, 3, 3);
+			gsl_vector *eval = gsl_vector_alloc(3);
+			gsl_matrix *evec = gsl_matrix_alloc(3, 3);
+			gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc(3);
+			gsl_eigen_symmv(&m.matrix, eval, evec, w);
+			gsl_eigen_symmv_free(w);
+			gsl_eigen_symmv_sort(eval, evec, GSL_EIGEN_SORT_ABS_DESC);
+			feature_map.push_back(mp(curr, std::abs(gsl_vector_get(eval, 0))));
+			
+			gsl_vector_free (eval);
+			gsl_matrix_free (evec);
+			curr=normals[i].first;
+			mean=normals[i].second;
+			count=1;
+			prev=i;
 		}
-	}
-	struct mat
-	{
-		double a1, a2, a3;
-		double b1, b2, b3;
-		double c1, c2, c3;
-		mat()
+		else
 		{
-			a1=0.0; a2=0.0; a3=0.0; b1=0.0; b2=0.0; b3=0.0; c1=0.0; c2=0.0; c3=0.0;
-		}
-	};
-	
-	std::vector<std::vector<mat>> matrix(rows, std::vector<mat>(cols, mat()));
-	for(auto it : cloud)
-	{
-/*
-		int x=(it.x-minx+0.5*cell_size)/cell_size, y=(it.y-miny+0.5*cell_size)/cell_size;
-		double px=it.nx-mean_norms[x][y].nx, py=it.ny-mean_norms[x][y].ny, pz=it.nz-mean_norms[x][y].nz;
-		matrix[x][y].a1+= px*px; matrix[x][y].a2+= px*py; matrix[x][y].a3+= px*pz;
-		matrix[x][y].b1+= py*px; matrix[x][y].b2+= py*py; matrix[x][y].b3+= py*pz;
-		matrix[x][y].c1+= pz*px; matrix[x][y].c2+= pz*py; matrix[x][y].c3+= pz*pz;
-*/
-		int x=(it.coordinate(0)-minx+0.5*cell_size)/cell_size, y=(it.coordinate(1)-miny+0.5*cell_size)/cell_size;
-		double px=it.normal(0)-mean_norms[x][y].nx, py=it.normal(1)-mean_norms[x][y].ny, pz=it.normal(2)-mean_norms[x][y].nz;
-		matrix[x][y].a1+= px*px; matrix[x][y].a2+= px*py; matrix[x][y].a3+= px*pz;
-		matrix[x][y].b1+= py*px; matrix[x][y].b2+= py*py; matrix[x][y].b3+= py*pz;
-		matrix[x][y].c1+= pz*px; matrix[x][y].c2+= pz*py; matrix[x][y].c3+= pz*pz;
-
-	}
-
-	map.second.clear();
-	map.second=vvd(rows, vd(cols, 0.0));
-	for(int i=0; i<rows; ++i)
-	{
-		for(int j=0; j<cols; ++j)
-		{
-			if(points_count[i][j]!=0)
-			{
-				matrix[i][j].a1/=double(points_count[i][j]); matrix[i][j].a2/=double(points_count[i][j]); matrix[i][j].a3/=double(points_count[i][j]);
-				matrix[i][j].b1/=double(points_count[i][j]); matrix[i][j].b2/=double(points_count[i][j]); matrix[i][j].b3/=double(points_count[i][j]);
-				matrix[i][j].c1/=double(points_count[i][j]); matrix[i][j].c2/=double(points_count[i][j]); matrix[i][j].c3/=double(points_count[i][j]);
-				
-				double data[] = {matrix[i][j].a1, matrix[i][j].a2, matrix[i][j].a3,
-				matrix[i][j].b1, matrix[i][j].b2, matrix[i][j].b3,
-				matrix[i][j].c1, matrix[i][j].c2, matrix[i][j].c3};
-
-				gsl_matrix_view m = gsl_matrix_view_array(data, 3, 3);
-				gsl_vector *eval = gsl_vector_alloc(3);
-				gsl_matrix *evec = gsl_matrix_alloc(3, 3);
-
-				gsl_eigen_symmv_workspace * w = gsl_eigen_symmv_alloc(3);
-				gsl_eigen_symmv(&m.matrix, eval, evec, w);
-				gsl_eigen_symmv_free(w);
-				gsl_eigen_symmv_sort(eval, evec, GSL_EIGEN_SORT_ABS_DESC);
-				map.second[i][j]=std::abs(gsl_vector_get(eval, 0));
-				
-				gsl_vector_free (eval);
-				gsl_matrix_free (evec);
-			}
+			mean += normals[i].second;
 		}
 	}
 }

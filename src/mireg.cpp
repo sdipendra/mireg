@@ -4,7 +4,10 @@
 #include <transformation.hpp>
 #include <registration.hpp>
 
-const double min_cell_size = 0.1;	// in metres
+//const double min_cell_size = 0.01;	// in metres best results
+//const int hist_size = 100;	// sampling size for histogram
+
+const double min_cell_size = 0.01;	// in metres
 const int hist_size = 100;	// sampling size for histogram
 
 bool file_read(std::string filename, std::vector<point>& cloud)
@@ -115,7 +118,7 @@ int main(int argc, char** argv)
 		Eigen::Matrix4d transformation_mat;
 		transformation_mat=transformation_mat1.inverse()*transformation_mat3*transformation_mat2*transformation_mat1;
 
-		std::string output_name(map); output_name.push_back('_');	// Can try regular expressions
+		std::string output_name(map); output_name.push_back('_');	// TODO: Can try regular expressions
 		std::string f1(argv[1]), f2(argv[2]);
 		std::string s1, s2;
 		s1.push_back(f1[f1.size()-8]); s1.push_back(f1[f1.size()-7]); s1.push_back(f1[f1.size()-6]); s1.push_back(f1[f1.size()-5]);

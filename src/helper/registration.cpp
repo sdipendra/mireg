@@ -13,8 +13,8 @@ void fill_sample_space(std::vector<Eigen::Vector3d>& states, int n_random_states
 	Eigen::Vector3d temp;
 	
 	// uniformly selected states			
-	temp=Eigen::Vector3d(0.0, 0.0, step*dist_to_angle); states.push_back(temp);	// some problem here swapped angle modified funcs
-	temp=Eigen::Vector3d(0.0, 0.0, -step*dist_to_angle); states.push_back(temp); 
+	temp=Eigen::Vector3d(0.0, 0.0, step*dist_to_angle); states.push_back(temp);
+	temp=Eigen::Vector3d(0.0, 0.0, -step*dist_to_angle); states.push_back(temp);
 	temp=Eigen::Vector3d(step, 0.0, 0.0); states.push_back(temp);
 	temp=Eigen::Vector3d(-step, 0.0, 0.0); states.push_back(temp);
 	temp=Eigen::Vector3d(0.0, step, 0.0); states.push_back(temp);
@@ -53,14 +53,13 @@ void fill_sample_space(std::vector<Eigen::Vector3d>& states, int n_random_states
 	}
 }
 
-// Improve routine to use data judiciously and avoid too much copying
 bool multires_registration(std::vector<point>& reading, std::vector<point>& reference, Eigen::Matrix4d& transformation_mat, double min_cell_size, int hist_size, std::string& map)
 {
 		//variance_map, reflectivity_map, grayscale_map, normals_map
 		std::vector<double> map_weightage_coeff(4);
 		map_weightage_coeff[0]=7.0; map_weightage_coeff[1]=1.0; map_weightage_coeff[2]=1.0; map_weightage_coeff[3]=9.0;
 		
-		typedef void (*characteristic_map_func)(std::vector<point>&, double, std::pair<pii, vvd>&);
+		typedef void (*characteristic_map_func)(std::vector<point>&, double, std::vector<std::pair<pii, double>>&);
 		std::vector<characteristic_map_func> feature_map_func;
 		if(map=="all")
 		{
@@ -69,26 +68,11 @@ bool multires_registration(std::vector<point>& reading, std::vector<point>& refe
 			feature_map_func.push_back(&grayscale_map);
 			feature_map_func.push_back(&normal_map);
 		}
-		else if(map=="variance")
-		{
-			feature_map_func.push_back(&variance_map);
-		}
-		else if(map=="reflectivity")
-		{
-			feature_map_func.push_back(&reflectivity_map);
-		}
-		else if(map=="grayscale")
-		{
-			feature_map_func.push_back(&grayscale_map);
-		}
-		else if(map=="normal")
-		{
-			feature_map_func.push_back(&normal_map);
-		}
-		else
-		{
-			return false;
-		}
+		else if(map=="variance") feature_map_func.push_back(&variance_map);
+		else if(map=="reflectivity") feature_map_func.push_back(&reflectivity_map);
+		else if(map=="grayscale") feature_map_func.push_back(&grayscale_map);
+		else if(map=="normal") feature_map_func.push_back(&normal_map);
+		else return false;
 				
 		double dist_to_angle=0.05235987756, dist_to_prob_dist=5.0;	// fine tune dist_to_prob_dist
 		int n_random_states=0;	// add later
@@ -104,13 +88,13 @@ bool multires_registration(std::vector<point>& reading, std::vector<point>& refe
 //			double smallest=cell_size/(2.0*dist_to_prob_dist);
 			double smallest=cell_size/4.0;
 			
-			std::vector<point> r(reading);	// TODO: MODIFY THIS IT COPIES DATA TOO MANY TIMES CAUSING THE PROGRAM TO RUN SLOW
+			std::vector<point> r(reading);
 			build_transform_z(transformation_mat, best_transformation);
 			transform(r, transformation_mat);
-			std::pair<pii, vvd> feature_map1, feature_map2;
 			ld best_mi=0.0;
 			for(int mit=0; mit<int(feature_map_func.size()); ++mit)
 			{
+				std::vector<std::pair<pii, double>> feature_map1, feature_map2;
 				feature_map_func[mit](r, cell_size, feature_map1);
 				feature_map_func[mit](reference, cell_size, feature_map2);
 				double temp=map_weightage_coeff[mit]*mutual_information(feature_map1, feature_map2, hist_size);
@@ -120,7 +104,7 @@ bool multires_registration(std::vector<point>& reading, std::vector<point>& refe
 			{
 				std::vector<Eigen::Vector3d> states;
 			
-				fill_sample_space(states, n_random_states, step, dist_to_angle, dist_to_prob_dist);	// check the implementation
+				fill_sample_space(states, n_random_states, step, dist_to_angle, dist_to_prob_dist);
 			
 				ld better_mi=best_mi;
 				Eigen::Vector3d better_transformation(0.0, 0.0, 0.0);
@@ -135,6 +119,7 @@ bool multires_registration(std::vector<point>& reading, std::vector<point>& refe
 					ld mi=0.0;
 					for(int mit=0; mit<int(feature_map_func.size()); ++mit)
 					{
+						std::vector<std::pair<pii, double>> feature_map1, feature_map2;
 						feature_map_func[mit](r, cell_size, feature_map1);
 						feature_map_func[mit](reference, cell_size, feature_map2);
 						double temp=map_weightage_coeff[mit]*mutual_information(feature_map1, feature_map2, hist_size);
@@ -163,6 +148,7 @@ bool multires_registration(std::vector<point>& reading, std::vector<point>& refe
 				}
 			}
 			cell_size/=cell_reduction_constant;
+			std::cout<<cell_size<<" "<<best_mi<<std::endl;
 		}
 		build_transform_z(transformation_mat, best_transformation);
 		transform(reading, transformation_mat);

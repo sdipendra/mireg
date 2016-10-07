@@ -1,4 +1,9 @@
+NOTES:
+gprof command: gprof -b -Q -T mireg_serial gmon.out > analysis.txt
+
+TODO:
 1. Move all transformation related task to Eigen libraries.
 2. Try to write the shortest and most understandable routines.
-3. Complete the code test it and push it to the github server.
-4. Make all the transformation matrices to tranform objects easier to do inverse transform operations and other
+
+IDEAS:
+1. Currently sorting routine in mutual_information is the bottle-neck try to use thrust sort and transfer this to gpu and see performance gains.

@@ -5,9 +5,11 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <numeric>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 //#include <thrust/reduce.h>	revive when start with parallel version
 //#include <thrust/device_vector.h>
@@ -51,7 +53,7 @@ typedef std::vector<vpii> vvpii;
 const long double pi = 3.141592653589793238462643383279502884197169399375105820974944592307816406286;
 //#define f(i, n) for(int i=0; i<n; ++i)
 //#define fi(i, n, j) for(int i=j; i<n; ++i)
-#define mp make_pair
+#define mp std::make_pair
 //#define all(container) container.begin(), container.end()
 //#define allr(container) container.rbegin(), container.rend()
 //#define tr(container, it) for (decltype(container.begin()) it = container.begin(); it != container.end(); it++)
