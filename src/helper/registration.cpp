@@ -12,7 +12,7 @@ void fill_sample_space(std::vector<Eigen::Vector3d>& states, int n_random_states
 
 	Eigen::Vector3d temp;
 	
-	// uniformly selected states			
+	// uniformly selected 26 states
 	temp=Eigen::Vector3d(0.0, 0.0, step*dist_to_angle); states.push_back(temp);
 	temp=Eigen::Vector3d(0.0, 0.0, -step*dist_to_angle); states.push_back(temp);
 	temp=Eigen::Vector3d(step, 0.0, 0.0); states.push_back(temp);
@@ -148,7 +148,7 @@ bool multires_registration(std::vector<point>& reading, std::vector<point>& refe
 				}
 			}
 			cell_size/=cell_reduction_constant;
-			std::cout<<cell_size<<" "<<best_mi<<std::endl;
+			std::cout<<"cell_size: "<<cell_size<<", cells_best_mi: "<<best_mi<<std::endl;
 		}
 		build_transform_z(transformation_mat, best_transformation);
 		transform(reading, transformation_mat);

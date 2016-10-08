@@ -3,9 +3,6 @@
 
 double mutual_information(std::vector<std::pair<pii, double>>& feature_map1, std::vector<std::pair<pii, double>>& feature_map2, int hist_size)
 {
-	std::sort(feature_map1.begin(), feature_map1.end());	// TODO: Current bottle-neck
-	std::sort(feature_map2.begin(), feature_map2.end());
-
 	double maxi = -std::numeric_limits<double>::max(), mini=std::numeric_limits<double>::max();
 	for(std::vector<std::pair<pii, double>>::iterator it = feature_map1.begin(); it != feature_map1.end(); ++it)
 	{

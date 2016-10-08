@@ -8,37 +8,113 @@ void variance_map(std::vector<point>& cloud, double cell_size, std::vector<std::
 	ground_plane_extraction(cloud, ground, rest);	//TODO: Give proof of correctness that ground points give irrelevant information, if possible extend it to reflectivity_map, grayscale_map and normal_map as it decreases runtime by half as the data points are reduced by approximately half.
 
 	int size = rest.size();
-	feature_map.clear(); feature_map = std::vector<std::pair<pii, double>>(size);
+	std::vector<std::pair<pii, double>> variances(size);
 	for(int i=0; i<size; ++i)
 	{
 		int x=(rest[i].coordinate(0)+0.5*cell_size)/cell_size, y=(rest[i].coordinate(1)+0.5*cell_size)/cell_size;
 		double value = rest[i].coordinate(2) * rest[i].coordinate(2);
-		feature_map[i] = mp(mp(x, y), value);
+		variances[i] = mp(mp(x, y), value);
+	}
+	
+	std::sort(variances.begin(), variances.end());	// TODO: Current bottle-neck
+	variances.push_back(mp(mp(std::numeric_limits<int>::max(), std::numeric_limits<int>::max()), std::numeric_limits<double>::max()));
+	int variances_size = variances.size();
+	pii curr = variances[0].first;
+	double mean = variances[0].second;
+	int count=1;
+	feature_map.clear(); feature_map.reserve(variances_size);
+	for(int i=1; i<variances_size; ++i)
+	{
+		if(variances[i].first != curr)
+		{
+			mean /= count;
+			feature_map.push_back(mp(curr, mean));
+			
+			curr=variances[i].first;
+			mean=variances[i].second;
+			count=1;
+		}
+		else
+		{
+			mean += variances[i].second;
+			count++;
+		}
 	}
 }
 
 void reflectivity_map(std::vector<point>& cloud, double cell_size, std::vector<std::pair<pii, double>>& feature_map)
 {
 	int size = cloud.size();
-	feature_map.clear(); feature_map = std::vector<std::pair<pii, double>>(size);
+	std::vector<std::pair<pii, double>> reflectivities(size);
 	for(int i=0; i<size; ++i)
 	{
 		int x=(cloud[i].coordinate(0)+0.5*cell_size)/cell_size, y=(cloud[i].coordinate(1)+0.5*cell_size)/cell_size;
 		double value = cloud[i].ref * cloud[i].ref;
-		feature_map[i] = mp(mp(x, y), value);
+		reflectivities[i] = mp(mp(x, y), value);
+	}
+
+	std::sort(reflectivities.begin(), reflectivities.end());	// TODO: Current bottle-neck
+	reflectivities.push_back(mp(mp(std::numeric_limits<int>::max(), std::numeric_limits<int>::max()), std::numeric_limits<double>::max()));
+	int reflectivities_size = reflectivities.size();
+	pii curr = reflectivities[0].first;
+	double mean = reflectivities[0].second;
+	int count=1;
+	feature_map.clear(); feature_map.reserve(reflectivities_size);
+	for(int i=1; i<reflectivities_size; ++i)
+	{
+		if(reflectivities[i].first != curr)
+		{
+			mean /= count;
+			feature_map.push_back(mp(curr, mean));
+			
+			curr=reflectivities[i].first;
+			mean=reflectivities[i].second;
+			count=1;
+		}
+		else
+		{
+			mean += reflectivities[i].second;
+			count++;
+		}
 	}
 }
 
 void grayscale_map(std::vector<point>& cloud, double cell_size, std::vector<std::pair<pii, double>>& feature_map)
 {
 	int size = cloud.size();
-	feature_map.clear(); feature_map = std::vector<std::pair<pii, double>>(size);
+	std::vector<std::pair<pii, double>> grayscales(size);
 	for(int i=0; i<size; ++i)
 	{
 		int x=(cloud[i].coordinate(0)+0.5*cell_size)/cell_size, y=(cloud[i].coordinate(1)+0.5*cell_size)/cell_size;
 		double value = cloud[i].gray * cloud[i].gray;
-		feature_map[i] = mp(mp(x, y), value);
+		grayscales[i] = mp(mp(x, y), value);
 	}
+
+	std::sort(grayscales.begin(), grayscales.end());	// TODO: Current bottle-neck
+	grayscales.push_back(mp(mp(std::numeric_limits<int>::max(), std::numeric_limits<int>::max()), std::numeric_limits<double>::max()));
+	int grayscales_size = grayscales.size();
+	pii curr = grayscales[0].first;
+	double mean = grayscales[0].second;
+	int count=1;
+	feature_map.clear(); feature_map.reserve(grayscales_size);
+	for(int i=1; i<grayscales_size; ++i)
+	{
+		if(grayscales[i].first != curr)
+		{
+			mean /= count;
+			feature_map.push_back(mp(curr, mean));
+			
+			curr=grayscales[i].first;
+			mean=grayscales[i].second;
+			count=1;
+		}
+		else
+		{
+			mean += grayscales[i].second;
+			count++;
+		}
+	}
+
 }
 
 void normal_map(std::vector<point>& cloud, double cell_size, std::vector<std::pair<pii, double>>& feature_map)
@@ -52,7 +128,7 @@ void normal_map(std::vector<point>& cloud, double cell_size, std::vector<std::pa
 		if(value!=Eigen::Vector3d::Zero())
 		{
 			value.normalize();
-			normals.push_back(mp(mp(x, y), value));	// handle upcoming for loops
+			normals.push_back(mp(mp(x, y), value));
 		}
 	}
 	
@@ -65,7 +141,7 @@ void normal_map(std::vector<point>& cloud, double cell_size, std::vector<std::pa
 		}
 	} my_comp;
 
-	std::sort(normals.begin(), normals.end(), my_comp);
+	std::sort(normals.begin(), normals.end(), my_comp);	// TODO: Current bottle-neck
 	normals.push_back(mp(mp(std::numeric_limits<int>::max(), std::numeric_limits<int>::max()), Eigen::Vector3d::Zero()));
 	int normals_size = normals.size();
 	pii curr = normals[0].first;
@@ -106,6 +182,7 @@ void normal_map(std::vector<point>& cloud, double cell_size, std::vector<std::pa
 		else
 		{
 			mean += normals[i].second;
+			count++;
 		}
 	}
 }

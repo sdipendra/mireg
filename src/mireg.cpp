@@ -4,9 +4,6 @@
 #include <transformation.hpp>
 #include <registration.hpp>
 
-//const double min_cell_size = 0.01;	// in metres best results
-//const int hist_size = 100;	// sampling size for histogram
-
 const double min_cell_size = 0.01;	// in metres
 const int hist_size = 100;	// sampling size for histogram
 

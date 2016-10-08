@@ -1,0 +1,2 @@
+/usr/bin/ar cr ../../lib/libmutual_information.a  CMakeFiles/mutual_information.dir/mutual_information.cpp.o
+/usr/bin/ranlib ../../lib/libmutual_information.a

@@ -1,0 +1,1 @@
+/usr/bin/c++    -std=c++11 -O2 -g -pg    CMakeFiles/transformer.dir/transformer.cpp.o  -o ../bin/transformer  -L/usr/local/cuda/lib64 -rdynamic ../lib/libproject_classes.a -Wl,-rpath,/usr/local/cuda/lib64 

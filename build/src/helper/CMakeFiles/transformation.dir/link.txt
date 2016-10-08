@@ -1,0 +1,2 @@
+/usr/bin/ar cr ../../lib/libtransformation.a  CMakeFiles/transformation.dir/transformation.cpp.o
+/usr/bin/ranlib ../../lib/libtransformation.a
