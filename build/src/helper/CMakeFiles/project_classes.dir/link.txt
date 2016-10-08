@@ -1,2 +1,0 @@
-/usr/bin/ar cr ../../lib/libproject_classes.a  CMakeFiles/project_classes.dir/project_classes.cpp.o
-/usr/bin/ranlib ../../lib/libproject_classes.a

@@ -1,2 +1,0 @@
-/usr/bin/ar cr ../../lib/libpcl_helper.a  CMakeFiles/pcl_helper.dir/pcl_helper.cpp.o
-/usr/bin/ranlib ../../lib/libpcl_helper.a

@@ -1,2 +1,0 @@
-/usr/bin/ar cr ../../lib/libpcl_visualizer.a  CMakeFiles/pcl_visualizer.dir/pcl_visualizer.cpp.o
-/usr/bin/ranlib ../../lib/libpcl_visualizer.a

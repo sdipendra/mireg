@@ -1,2 +1,0 @@
-/usr/bin/ar cr ../../lib/libcharacteristic_map.a  CMakeFiles/characteristic_map.dir/characteristic_map.cpp.o
-/usr/bin/ranlib ../../lib/libcharacteristic_map.a
