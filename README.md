@@ -27,7 +27,7 @@ To build the project:
     cmake ..
     make
     cd bin
-    ./mireg file_name1 file_name2 {all, variance, reflectivity, grayscale, normal}
+    ./mireg_serial file_name1 file_name2 {all, variance, reflectivity, grayscale, normal}
 
 this will output the euler transformation to be carried out on the first(reading) scan to align with the second(reference) scan. Currently don't use all features as it takes too much time, for testing purpose use variance map. Transformation matrix can also be obtained by tweaking the code slightly as I am converting transformation matrix only to euler transformations.
 
