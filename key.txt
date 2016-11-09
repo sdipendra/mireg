@@ -1,9 +1,15 @@
 NOTES:
 gprof command: gprof -b -Q -T mireg_serial gmon.out > analysis.txt
+perf command: perf stat -d ./mireg_serial SCAN_normal_refc_gray_1600.txt SCAN_normal_refc_gray_1619.txt reflectivity
+perf command: perf record -g ./mireg_serial SCAN_normal_refc_gray_1600.txt SCAN_normal_refc_gray_1619.txt reflectivity
+perf command: perf report -g "graph,0.5,caller"
 
 TODO:
-1. Move all transformation related task to Eigen libraries.
-2. Try to write the shortest and most understandable routines.
+1. Move the implementation to cuda.
+2. Bring in normal and all implementations.
+3. Refine the algorithm remove pcl_helper support for finding the best fit plane.
+4. Organize the code well.
+5. Divide the data structure such that it fits L2 cache, and make processing pools for the reading points accordingly.
 
 IDEAS:
-1. Currently sorting routine in mutual_information is the bottle-neck try to use thrust sort and transfer this to gpu and see performance gains.
+

@@ -1,7 +1,5 @@
 configure_file(mireg.hpp ${PROJECT_BINARY_DIR}/include/mireg.hpp COPYONLY)
 configure_file(pcl_visualizer.hpp ${PROJECT_BINARY_DIR}/include/pcl_visualizer.hpp COPYONLY)
 configure_file(pcl_helper.hpp ${PROJECT_BINARY_DIR}/include/pcl_helper.hpp COPYONLY)
-configure_file(characteristic_map.hpp ${PROJECT_BINARY_DIR}/include/characteristic_map.hpp COPYONLY)
-configure_file(mutual_information.hpp ${PROJECT_BINARY_DIR}/include/mutual_information.hpp COPYONLY)
 configure_file(registration.hpp ${PROJECT_BINARY_DIR}/include/registration.hpp COPYONLY)
 configure_file(transformation.hpp ${PROJECT_BINARY_DIR}/include/transformation.hpp COPYONLY)

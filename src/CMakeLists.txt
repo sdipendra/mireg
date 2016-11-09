@@ -2,7 +2,9 @@ find_package(CUDA REQUIRED)
 list(APPEND CUDA_NVCC_FLAGS "-arch=sm_30;-std=c++11")
 find_package(OpenCV REQUIRED)
 
-set(GCC_COVERAGE_COMPILE_FLAGS "-std=c++11 -O2 -g -pg")
+set(PROFILING_FLAGS "-g -pg -fprofile-arcs -ftest-coverage -fno-omit-frame-pointer")
+set(GCC_COVERAGE_COMPILE_FLAGS "-std=c++11 -O2 ${PROFILING_FLAGS}")
+#set(GCC_COVERAGE_COMPILE_FLAGS "-std=c++11 -O2")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 
 #cuda_add_executable(mireg mireg.cu)

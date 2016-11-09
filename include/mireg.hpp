@@ -4,10 +4,15 @@
 // takes care of outside dependency and custom classes and structs of the program throughout the program
 #include <algorithm>
 #include <fstream>
+#include <future>
+#include <iomanip>
 #include <iostream>
 #include <map>
 #include <numeric>
+#include <queue>
+#include <stack>
 #include <string>
+#include <thread>
 #include <vector>
 #include <unordered_map>
 
@@ -31,8 +36,9 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
+#include <pthread.h>
+
 // Short hands for data types being used in the program
-typedef long double ld;
 typedef std::vector<int> vi;
 typedef std::vector<vi> vvi;
 typedef std::vector<double> vd;
