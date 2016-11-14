@@ -4,7 +4,7 @@ find_package(OpenCV REQUIRED)
 
 set(PROFILING_FLAGS "-g -pg -fprofile-arcs -ftest-coverage -fno-omit-frame-pointer")
 set(GCC_COVERAGE_COMPILE_FLAGS "-std=c++11 -O2 ${PROFILING_FLAGS}")
-#set(GCC_COVERAGE_COMPILE_FLAGS "-std=c++11 -O2")
+#set(GCC_COVERAGE_COMPILE_FLAGS "-std=c++11 -ffast-math -O3")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 
 #cuda_add_executable(mireg mireg.cu)

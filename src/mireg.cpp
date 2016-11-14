@@ -130,7 +130,7 @@ int main(int argc, char** argv)
 		std::cout<<map<<" "<<s1<<" "<<s2<<" "<<ans[0]<<" "<<ans[1]<<" "<<ans[2]<<" "<<ans[3]<<" "<<ans[4]<<" "<<ans[5]<<std::endl;
 
 		// RESULT
-//		plot_merged(reading, reference);
+//        plot_merged(reading, reference);
 	}
 	return 0;
 }

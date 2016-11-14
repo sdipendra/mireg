@@ -75,7 +75,7 @@ public:
 	std::vector<node> tree;
 	std::vector<unsigned int> events;
 
-	void insert(float x, float y, float value)
+    void insert(float x, float y, float value)
 	{
 		unsigned short int gridx = (x + max_cell_size * (grid_size/2)) / max_cell_size;
 		unsigned short int gridy = (y + max_cell_size * (grid_size/2)) / max_cell_size;
@@ -155,7 +155,7 @@ public:
 			count[curr_node_index]++;
 
 			curr_step_size /= 2;
-		}
+        }
 	}
 
 	void event_insert(float x, float y, float value, unsigned short int req_level)
@@ -467,7 +467,7 @@ bool multires_registration(std::vector<point>& reading, std::vector<point>& refe
 				else
 				{
 					step/=step_ratio;
-				}
+                }
 			}
 			std::cout<<"cell_size: "<<cell_size<<", cells_best_mi: "<<best_mi<<std::endl;	// TODO: Remove at end
 			cell_size/=cell_reduction_constant;
